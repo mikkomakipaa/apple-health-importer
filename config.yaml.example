@@ -1,0 +1,18 @@
+# InfluxDB Configuration
+influxdb:
+  url: "http://your-influxdb-host:8086"
+  token: "your-influxdb-token"
+  org: "your-organization"
+  bucket: "health"
+  
+# Home Assistant Configuration
+homeassistant:
+  url: "http://your-homeassistant:8123"
+  token: "your-long-lived-access-token"
+
+# Data Processing Configuration
+processing:
+  # Time zone for processing dates (use your local timezone)
+  timezone: "Europe/Helsinki"
+  # Minimum time between data points in seconds (to avoid duplicates)
+  min_time_between: 60 
