@@ -25,107 +25,98 @@ def setup_logging():
     """Configure logging."""
     logging.basicConfig(
         level=logging.INFO,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler('import.log'),
-            logging.StreamHandler()
-        ]
+        format='%(asctime)s - %(levelname)s - %(message)s'
     )
 
-def process_health_data(xml_path: str, config: Dict) -> None:
-    """Process Apple Health export data."""
+def process_data(data: Dict, influxdb: InfluxDBWriter) -> bool:
+    """Process and write data point to InfluxDB."""
+    if data:
+        return influxdb.write_point(data)
+    return False
+
+def main():
+    parser = argparse.ArgumentParser(description='Import Apple Health data to InfluxDB')
+    parser.add_argument('export_file', help='Path to the Apple Health export file')
+    parser.add_argument('--config', default='config.yaml', help='Path to config file')
+    args = parser.parse_args()
+
+    setup_logging()
+    config = load_config(args.config)
+
     try:
         # Initialize components
+        influxdb = InfluxDBWriter(
+            url=config['influxdb']['url'],
+            username=config['influxdb']['username'],
+            password=config['influxdb']['password'],
+            database=config['influxdb']['database']
+        )
+        
         parser = HealthDataParser(config['processing']['timezone'])
-        influx = InfluxDBWriter(
-            config['influxdb']['url'],
-            config['influxdb']['token'],
-            config['influxdb']['org'],
-            config['influxdb']['bucket']
-        )
-        ha = HomeAssistantAPI(
-            config['homeassistant']['url'],
-            config['homeassistant']['token']
-        )
-        
-        # Parse XML file
-        logging.info(f"Parsing XML file: {xml_path}")
-        tree = ET.parse(xml_path)
+
+        # Parse and process the export file
+        tree = ET.parse(args.export_file)
         root = tree.getroot()
-        
-        # Process records
-        latest_data = {}
-        data_points = []
-        
-        # Process heart rate records
-        for record in root.findall('Record'):
-            # Heart Rate
-            hr_data = parser.parse_heart_rate(record)
-            if hr_data:
-                data_points.append(hr_data)
-                latest_data['heart_rate'] = hr_data['fields']
-                latest_data['heart_rate']['time'] = hr_data['time']
-                
-            # Calories
-            cal_data = parser.parse_calories(record)
-            if cal_data:
-                data_points.append(cal_data)
-                if 'calories' not in latest_data:
-                    latest_data['calories'] = {}
-                latest_data['calories'][cal_data['fields']['type']] = cal_data['fields']['value']
-                
-            # Sleep
-            sleep_data = parser.parse_sleep(record)
-            if sleep_data:
-                data_points.append(sleep_data)
-                latest_data['sleep'] = {
-                    'state': sleep_data['fields']['value'],
-                    'duration_minutes': sleep_data['fields']['duration_minutes'],
-                    'start_time': sleep_data['time']
-                }
-        
+
+        stats = {
+            'vitals': 0,
+            'activity': 0,
+            'sleep': 0,
+            'errors': 0
+        }
+
+        # Process all records
+        for record in root.findall('.//Record'):
+            data = None
+            record_type = record.get('type', '')
+
+            # Try each parser based on record type
+            if 'HeartRate' in record_type:
+                data = parser.parse_heart_rate(record)
+                if data:
+                    stats['vitals'] += 1
+            elif any(energy_type in record_type for energy_type in ['EnergyBurned', 'StepCount']):
+                data = parser.parse_calories(record)
+                if data:
+                    stats['activity'] += 1
+            elif 'Sleep' in record_type:
+                data = parser.parse_sleep(record)
+                if data:
+                    stats['sleep'] += 1
+
+            if data and not process_data(data, influxdb):
+                stats['errors'] += 1
+
         # Process workouts
-        for workout in root.findall('Workout'):
-            workout_data = parser.parse_workout(workout)
-            if workout_data:
-                data_points.append(workout_data)
-                latest_data['workout'] = workout_data['fields']
-                latest_data['workout']['activity_type'] = workout_data['tags']['activity_type']
-                latest_data['workout']['start_time'] = workout_data['time']
-        
+        for workout in root.findall('.//Workout'):
+            data = parser.parse_workout(workout)
+            if data:
+                if process_data(data, influxdb):
+                    stats['activity'] += 1
+                else:
+                    stats['errors'] += 1
+
         # Process activity summaries
-        for activity in root.findall('ActivitySummary'):
-            activity_data = parser.parse_activity(activity)
-            if activity_data:
-                data_points.append(activity_data)
-                latest_data['activity'] = activity_data['fields']
-        
-        # Write data to InfluxDB
-        logging.info("Writing data to InfluxDB...")
-        success_count = influx.write_points(data_points)
-        logging.info(f"Successfully wrote {success_count} of {len(data_points)} points to InfluxDB")
-        
-        # Update Home Assistant sensors
-        logging.info("Updating Home Assistant sensors...")
-        ha.update_health_sensors(latest_data)
-        
-        # Cleanup
-        influx.close()
-        
+        for activity in root.findall('.//ActivitySummary'):
+            data = parser.parse_activity(activity)
+            if data:
+                if process_data(data, influxdb):
+                    stats['activity'] += 1
+                else:
+                    stats['errors'] += 1
+
+        logging.info("Data import completed:")
+        logging.info(f"  Vitals records: {stats['vitals']}")
+        logging.info(f"  Activity records: {stats['activity']}")
+        logging.info(f"  Sleep records: {stats['sleep']}")
+        if stats['errors'] > 0:
+            logging.warning(f"  Errors encountered: {stats['errors']}")
+
     except Exception as e:
         logging.error(f"Error processing health data: {e}")
         sys.exit(1)
-
-def main():
-    parser = argparse.ArgumentParser(description='Import Apple Health data to Home Assistant')
-    parser.add_argument('xml_file', help='Path to the Apple Health export XML file')
-    parser.add_argument('--config', default='config.yaml', help='Path to config file')
-    args = parser.parse_args()
-    
-    setup_logging()
-    config = load_config(args.config)
-    process_health_data(args.xml_file, config)
-    logging.info("Import completed successfully")
+    finally:
+        influxdb.close()
 
 if __name__ == '__main__':
     main() 

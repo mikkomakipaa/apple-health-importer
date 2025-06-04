@@ -20,7 +20,6 @@ class HealthDataParser:
         try:
             value = float(record.get('value'))
             start_date = self.parse_datetime(record.get('startDate'))
-            end_date = self.parse_datetime(record.get('endDate'))
             device = record.get('device', '')
             
             # Get motion context if available
@@ -30,15 +29,16 @@ class HealthDataParser:
                     motion_context = int(metadata.get('value'))
                     
             return {
-                'measurement': 'apple_health_heartrate',
+                'measurement': 'apple_health_vitals',
+                'type': 'HKQuantityTypeIdentifierHeartRate',
                 'time': start_date.isoformat(),
                 'fields': {
-                    'value': value,
-                    'motion_context': motion_context
+                    'heart_rate': value
                 },
                 'tags': {
                     'device': device,
-                    'source': record.get('sourceName')
+                    'source': record.get('sourceName'),
+                    'motion_context': str(motion_context) if motion_context is not None else None
                 }
             }
         except (ValueError, TypeError, AttributeError) as e:
@@ -49,20 +49,19 @@ class HealthDataParser:
         """Parse workout record."""
         try:
             activity_type = workout.get('workoutActivityType')
-            duration = float(workout.get('duration', 0))
-            distance = float(workout.get('totalDistance', 0))
-            energy = float(workout.get('totalEnergyBurned', 0))
+            duration = float(workout.get('duration', 0))  # Already in seconds
+            distance = float(workout.get('totalDistance', 0)) * 1000  # Convert km to m
+            energy = float(workout.get('totalEnergyBurned', 0))  # Already in kcal
             start_date = self.parse_datetime(workout.get('startDate'))
-            end_date = self.parse_datetime(workout.get('endDate'))
             
             return {
-                'measurement': 'apple_health_workouts',
+                'measurement': 'apple_health_activity',
+                'type': 'HKWorkoutTypeIdentifier',
                 'time': start_date.isoformat(),
                 'fields': {
                     'duration': duration,
                     'distance': distance,
-                    'energy_burned': energy,
-                    'duration_minutes': duration / 60.0
+                    'energy': energy
                 },
                 'tags': {
                     'activity_type': activity_type,
@@ -80,20 +79,24 @@ class HealthDataParser:
             if not date:
                 return None
                 
-            # Convert YYYY-MM-DD to datetime
+            # Convert YYYY-MM-DD to datetime at start of day
             activity_date = datetime.strptime(date, "%Y-%m-%d").replace(
                 tzinfo=self.timezone
             )
             
             return {
                 'measurement': 'apple_health_activity',
+                'type': 'HKActivitySummary',
                 'time': activity_date.isoformat(),
                 'fields': {
-                    'active_energy_burned': float(activity.get('activeEnergyBurned', 0)),
-                    'active_energy_burned_goal': float(activity.get('activeEnergyBurnedGoal', 0)),
-                    'apple_move_time': float(activity.get('appleMoveTime', 0)),
-                    'apple_exercise_time': float(activity.get('appleExerciseTime', 0)),
-                    'apple_stand_hours': float(activity.get('appleStandHours', 0))
+                    'energy': float(activity.get('activeEnergyBurned', 0)),
+                    'energy_goal': float(activity.get('activeEnergyBurnedGoal', 0)),
+                    'move_time': float(activity.get('appleMoveTime', 0)),
+                    'exercise_time': float(activity.get('appleExerciseTime', 0)),
+                    'stand_hours': float(activity.get('appleStandHours', 0))
+                },
+                'tags': {
+                    'summary_type': 'daily'
                 }
             }
         except (ValueError, TypeError, AttributeError) as e:
@@ -113,15 +116,17 @@ class HealthDataParser:
         try:
             value = float(record.get('value', 0))
             start_date = self.parse_datetime(record.get('startDate'))
+            record_type = record.get('type')
             
             return {
-                'measurement': 'apple_health_calories',
+                'measurement': 'apple_health_activity',
+                'type': record_type,
                 'time': start_date.isoformat(),
                 'fields': {
-                    'value': value,
-                    'type': 'active' if 'Active' in record.get('type') else 'resting'
+                    'energy': value
                 },
                 'tags': {
+                    'energy_type': 'active' if 'Active' in record_type else 'resting',
                     'source': record.get('sourceName')
                 }
             }
@@ -138,15 +143,18 @@ class HealthDataParser:
             start_date = self.parse_datetime(record.get('startDate'))
             end_date = self.parse_datetime(record.get('endDate'))
             value = record.get('value')
+            duration_minutes = (end_date - start_date).total_seconds() / 60.0
             
             return {
                 'measurement': 'apple_health_sleep',
+                'type': 'HKCategoryTypeIdentifierSleepAnalysis',
                 'time': start_date.isoformat(),
                 'fields': {
-                    'value': value,
-                    'duration_minutes': (end_date - start_date).total_seconds() / 60.0
+                    'duration': duration_minutes,
+                    'quality': 1 if value == 'HKCategoryValueSleepAnalysisAsleep' else 0
                 },
                 'tags': {
+                    'state': value,
                     'source': record.get('sourceName')
                 }
             }
