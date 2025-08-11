@@ -1,9 +1,14 @@
 import xml.etree.ElementTree as ET
 from datetime import datetime
 import pytz
-from typing import Dict, List, Optional
+import logging
+from typing import Dict, List, Optional, Union
 
 class HealthDataParser:
+    # Constants for unit conversions
+    KM_TO_METERS = 1000
+    MINUTES_TO_SECONDS = 60.0
+    
     def __init__(self, timezone: str):
         self.timezone = pytz.timezone(timezone)
         
@@ -12,13 +17,22 @@ class HealthDataParser:
         dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S %z")
         return dt.astimezone(self.timezone)
     
-    def parse_heart_rate(self, record: ET.Element) -> Optional[Dict]:
+    def parse_heart_rate(self, record: ET.Element) -> Optional[Dict[str, Union[str, Dict]]]:
         """Parse heart rate record."""
         if record.get('type') != 'HKQuantityTypeIdentifierHeartRate':
+            return None
+        
+        # Validate required attributes
+        if not all([record.get('value'), record.get('startDate')]):
+            logging.warning("Heart rate record missing required attributes")
             return None
             
         try:
             value = float(record.get('value'))
+            if value <= 0 or value > 300:  # Basic heart rate validation
+                logging.warning(f"Invalid heart rate value: {value}")
+                return None
+                
             start_date = self.parse_datetime(record.get('startDate'))
             device = record.get('device', '')
             
@@ -29,11 +43,11 @@ class HealthDataParser:
                     motion_context = int(metadata.get('value'))
                     
             return {
-                'measurement': 'apple_health_vitals',
+                'measurement': 'heartrate_bpm',
                 'type': 'HKQuantityTypeIdentifierHeartRate',
                 'time': start_date.isoformat(),
                 'fields': {
-                    'heart_rate': value
+                    'value': value
                 },
                 'tags': {
                     'device': device,
@@ -42,26 +56,37 @@ class HealthDataParser:
                 }
             }
         except (ValueError, TypeError, AttributeError) as e:
-            print(f"Error parsing heart rate record: {e}")
+            logging.error(f"Error parsing heart rate record: {e}")
             return None
             
-    def parse_workout(self, workout: ET.Element) -> Optional[Dict]:
+    def parse_workout(self, workout: ET.Element) -> Optional[Dict[str, Union[str, Dict]]]:
         """Parse workout record."""
+        # Validate required attributes
+        if not all([workout.get('workoutActivityType'), workout.get('startDate')]):
+            logging.warning("Workout record missing required attributes")
+            return None
+            
         try:
             activity_type = workout.get('workoutActivityType')
             duration = float(workout.get('duration', 0))  # Already in seconds
-            distance = float(workout.get('totalDistance', 0)) * 1000  # Convert km to m
+            distance = float(workout.get('totalDistance', 0)) * self.KM_TO_METERS  # Convert km to m
             energy = float(workout.get('totalEnergyBurned', 0))  # Already in kcal
+            
+            # Basic validation
+            if duration < 0 or distance < 0 or energy < 0:
+                logging.warning(f"Invalid workout values: duration={duration}, distance={distance}, energy={energy}")
+                return None
+                
             start_date = self.parse_datetime(workout.get('startDate'))
             
             return {
-                'measurement': 'apple_health_activity',
+                'measurement': 'energy_kcal',
                 'type': 'HKWorkoutTypeIdentifier',
                 'time': start_date.isoformat(),
                 'fields': {
+                    'value': energy,
                     'duration': duration,
-                    'distance': distance,
-                    'energy': energy
+                    'distance': distance
                 },
                 'tags': {
                     'activity_type': activity_type,
@@ -69,10 +94,10 @@ class HealthDataParser:
                 }
             }
         except (ValueError, TypeError, AttributeError) as e:
-            print(f"Error parsing workout record: {e}")
+            logging.error(f"Error parsing workout record: {e}")
             return None
             
-    def parse_activity(self, activity: ET.Element) -> Optional[Dict]:
+    def parse_activity(self, activity: ET.Element) -> Optional[Dict[str, Union[str, Dict]]]:
         """Parse activity summary record."""
         try:
             date = activity.get('dateComponents')
@@ -85,14 +110,14 @@ class HealthDataParser:
             )
             
             return {
-                'measurement': 'apple_health_activity',
+                'measurement': 'energy_kcal',
                 'type': 'HKActivitySummary',
                 'time': activity_date.isoformat(),
                 'fields': {
-                    'energy': float(activity.get('activeEnergyBurned', 0)),
-                    'energy_goal': float(activity.get('activeEnergyBurnedGoal', 0)),
-                    'move_time': float(activity.get('appleMoveTime', 0)),
-                    'exercise_time': float(activity.get('appleExerciseTime', 0)),
+                    'value': float(activity.get('activeEnergyBurned', 0)),
+                    'target': float(activity.get('activeEnergyBurnedGoal', 0)),
+                    'move_minutes': float(activity.get('appleMoveTime', 0)),
+                    'exercise_minutes': float(activity.get('appleExerciseTime', 0)),
                     'stand_hours': float(activity.get('appleStandHours', 0))
                 },
                 'tags': {
@@ -100,10 +125,10 @@ class HealthDataParser:
                 }
             }
         except (ValueError, TypeError, AttributeError) as e:
-            print(f"Error parsing activity record: {e}")
+            logging.error(f"Error parsing activity record: {e}")
             return None
             
-    def parse_calories(self, record: ET.Element) -> Optional[Dict]:
+    def parse_calories(self, record: ET.Element) -> Optional[Dict[str, Union[str, Dict]]]:
         """Parse calorie-related records."""
         calorie_types = [
             'HKQuantityTypeIdentifierBasalEnergyBurned',
@@ -112,18 +137,27 @@ class HealthDataParser:
         
         if record.get('type') not in calorie_types:
             return None
+        
+        # Validate required attributes
+        if not all([record.get('value'), record.get('startDate')]):
+            logging.warning("Calorie record missing required attributes")
+            return None
             
         try:
             value = float(record.get('value', 0))
+            if value < 0 or value > 10000:  # Basic calorie validation
+                logging.warning(f"Invalid calorie value: {value}")
+                return None
+                
             start_date = self.parse_datetime(record.get('startDate'))
             record_type = record.get('type')
             
             return {
-                'measurement': 'apple_health_activity',
+                'measurement': 'energy_kcal',
                 'type': record_type,
                 'time': start_date.isoformat(),
                 'fields': {
-                    'energy': value
+                    'value': value
                 },
                 'tags': {
                     'energy_type': 'active' if 'Active' in record_type else 'resting',
@@ -131,10 +165,10 @@ class HealthDataParser:
                 }
             }
         except (ValueError, TypeError, AttributeError) as e:
-            print(f"Error parsing calorie record: {e}")
+            logging.error(f"Error parsing calorie record: {e}")
             return None
             
-    def parse_sleep(self, record: ET.Element) -> Optional[Dict]:
+    def parse_sleep(self, record: ET.Element) -> Optional[Dict[str, Union[str, Dict]]:
         """Parse sleep analysis record."""
         if record.get('type') != 'HKCategoryTypeIdentifierSleepAnalysis':
             return None
@@ -143,14 +177,14 @@ class HealthDataParser:
             start_date = self.parse_datetime(record.get('startDate'))
             end_date = self.parse_datetime(record.get('endDate'))
             value = record.get('value')
-            duration_minutes = (end_date - start_date).total_seconds() / 60.0
+            duration_minutes = (end_date - start_date).total_seconds() / self.MINUTES_TO_SECONDS
             
             return {
-                'measurement': 'apple_health_sleep',
+                'measurement': 'sleep_duration_min',
                 'type': 'HKCategoryTypeIdentifierSleepAnalysis',
                 'time': start_date.isoformat(),
                 'fields': {
-                    'duration': duration_minutes,
+                    'value': duration_minutes,
                     'quality': 1 if value == 'HKCategoryValueSleepAnalysisAsleep' else 0
                 },
                 'tags': {
@@ -159,5 +193,5 @@ class HealthDataParser:
                 }
             }
         except (ValueError, TypeError, AttributeError) as e:
-            print(f"Error parsing sleep record: {e}")
+            logging.error(f"Error parsing sleep record: {e}")
             return None 

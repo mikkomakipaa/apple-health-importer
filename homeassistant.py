@@ -1,6 +1,7 @@
 import requests
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 import logging
+import time
 
 class HomeAssistantAPI:
     def __init__(self, url: str, token: str):
@@ -10,31 +11,45 @@ class HomeAssistantAPI:
             "Content-Type": "application/json",
         }
         
-    def create_sensor(self, entity_id: str, state: str, attributes: Optional[Dict] = None) -> bool:
-        """Create or update a sensor in Home Assistant."""
-        try:
-            data = {
-                "state": state,
-                "attributes": attributes or {}
-            }
-            
-            response = requests.post(
-                f"{self.url}/api/states/{entity_id}",
-                headers=self.headers,
-                json=data
-            )
-            
-            if response.status_code in (200, 201):
-                return True
-            else:
-                logging.error(f"Error creating sensor {entity_id}: {response.text}")
-                return False
+    def create_sensor(self, entity_id: str, state: str, attributes: Optional[Dict[str, Union[str, int, float]]] = None, max_retries: int = 3) -> bool:
+        """Create or update a sensor in Home Assistant with retry logic."""
+        data = {
+            "state": state,
+            "attributes": attributes or {}
+        }
+        
+        for attempt in range(max_retries):
+            try:
+                response = requests.post(
+                    f"{self.url}/api/states/{entity_id}",
+                    headers=self.headers,
+                    json=data,
+                    timeout=10
+                )
                 
-        except Exception as e:
-            logging.error(f"Error communicating with Home Assistant: {e}")
-            return False
+                if response.status_code in (200, 201):
+                    return True
+                else:
+                    if attempt < max_retries - 1:
+                        wait_time = 2 ** attempt
+                        logging.warning(f"Home Assistant API attempt {attempt + 1} failed (status {response.status_code}), retrying in {wait_time}s")
+                        time.sleep(wait_time)
+                    else:
+                        logging.error(f"Error creating sensor {entity_id} after {max_retries} attempts: {response.text}")
+                        return False
+                    
+            except requests.RequestException as e:
+                if attempt < max_retries - 1:
+                    wait_time = 2 ** attempt
+                    logging.warning(f"Home Assistant connection attempt {attempt + 1} failed, retrying in {wait_time}s: {e}")
+                    time.sleep(wait_time)
+                else:
+                    logging.error(f"Error communicating with Home Assistant after {max_retries} attempts: {e}")
+                    return False
+        
+        return False
             
-    def update_health_sensors(self, latest_data: Dict) -> None:
+    def update_health_sensors(self, latest_data: Dict[str, Dict[str, Union[str, int, float]]]) -> None:
         """Update all health-related sensors with latest data."""
         # Heart Rate
         if 'heart_rate' in latest_data:
