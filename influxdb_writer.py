@@ -44,10 +44,20 @@ class InfluxDBWriter:
     def check_for_duplicates(self, measurement: str, start_time: str, end_time: str) -> Set[str]:
         """Check for existing timestamps in InfluxDB within the given time range."""
         try:
+            # First check if measurement exists by trying to get any record
+            test_query = f'SHOW MEASUREMENTS WHERE "name" = \'{measurement}\''
+            test_result = self.client.query(test_query)
+            
+            if not test_result:
+                # Measurement doesn't exist yet, no duplicates
+                return set()
+            
             # Query existing data points in the time range
+            # Use * to get all fields which avoids the "at least 1 non-time field" error
             query = f"""
-            SELECT time FROM "{measurement}" 
+            SELECT * FROM "{measurement}" 
             WHERE time >= '{start_time}' AND time <= '{end_time}'
+            LIMIT 10000
             """
             
             result = self.client.query(query)
@@ -57,7 +67,7 @@ class InfluxDBWriter:
                 for point in result.get_points():
                     existing_times.add(point['time'])
                     
-            logging.info(f"Found {len(existing_times)} existing records in {measurement} between {start_time} and {end_time}")
+            logging.debug(f"Found {len(existing_times)} existing records in {measurement} between {start_time} and {end_time}")
             return existing_times
             
         except Exception as e:
@@ -131,18 +141,56 @@ class InfluxDBWriter:
             "fields": {}
         }
 
-        # Add configured tags
+        # Add configured tags, filtering out empty/None values
         source_tags = data_point.get('tags', {})
         for tag_name in measurement_config.tags:
-            if tag_name in source_tags and source_tags[tag_name] is not None:
-                point['tags'][tag_name] = source_tags[tag_name]
+            tag_value = source_tags.get(tag_name)
+            if tag_value is not None and str(tag_value).strip():  # Skip empty strings and None
+                point['tags'][tag_name] = str(tag_value).strip()
 
-        # Map fields according to configuration
-        for field_name, value in data_point.get('fields', {}).items():
-            if field_name in measurement_config.fields:
-                point['fields'][measurement_config.fields[field_name]] = value
-
+        # Handle fields - use dynamic mapping based on data type
+        source_fields = data_point.get('fields', {})
+        
+        # For most cases, map 'value' field to a type-specific name
+        if 'value' in source_fields:
+            field_name = self._get_field_name_for_type(data_type)
+            point['fields'][field_name] = source_fields['value']
+        
+        # Map other fields directly
+        for field_name, value in source_fields.items():
+            if field_name != 'value':  # Already handled above
+                point['fields'][field_name] = value
+        
+        # Ensure we have at least one field for InfluxDB
+        if not point['fields']:
+            point['fields']['value'] = 1  # Default value for category-type records
+        
         return point
+    
+    def _get_field_name_for_type(self, data_type: str) -> str:
+        """Get appropriate field name for a data type."""
+        # Map common data types to meaningful field names
+        type_field_mapping = {
+            'HKQuantityTypeIdentifierHeartRate': 'heart_rate',
+            'HKQuantityTypeIdentifierRestingHeartRate': 'resting_heart_rate',
+            'HKQuantityTypeIdentifierHeartRateVariabilitySDNN': 'hrv_sdnn',
+            'HKQuantityTypeIdentifierBodyMass': 'weight',
+            'HKQuantityTypeIdentifierHeight': 'height',
+            'HKQuantityTypeIdentifierActiveEnergyBurned': 'active_energy',
+            'HKQuantityTypeIdentifierBasalEnergyBurned': 'basal_energy',
+            'HKQuantityTypeIdentifierStepCount': 'steps',
+            'HKQuantityTypeIdentifierDistanceWalkingRunning': 'distance',
+            'HKQuantityTypeIdentifierFlightsClimbed': 'flights',
+            'HKQuantityTypeIdentifierOxygenSaturation': 'oxygen_saturation',
+            'HKQuantityTypeIdentifierRespiratoryRate': 'respiratory_rate',
+            'HKQuantityTypeIdentifierVO2Max': 'vo2_max',
+            'HKQuantityTypeIdentifierWalkingSpeed': 'walking_speed',
+            'HKQuantityTypeIdentifierRunningSpeed': 'running_speed',
+            'HKQuantityTypeIdentifierAppleExerciseTime': 'exercise_time',
+            'HKQuantityTypeIdentifierAppleStandTime': 'stand_time',
+        }
+        
+        return type_field_mapping.get(data_type, 'value')
     
     def is_duplicate(self, data_point: Dict) -> bool:
         """Check if a data point is a duplicate."""

@@ -212,8 +212,16 @@ def main():
     config = load_config(args.config)
 
     try:
-        # Initialize configuration manager
-        config_manager = ConfigManager()
+        # Initialize configuration manager - use comprehensive config by default
+        measurements_config_path = "measurements_config_comprehensive.yaml"
+        if Path("measurements_config.yaml").exists() and not Path(measurements_config_path).exists():
+            # Fall back to basic config if comprehensive doesn't exist
+            measurements_config_path = "measurements_config.yaml"
+            logging.info("Using basic measurements configuration")
+        else:
+            logging.info("Using comprehensive measurements configuration for all 56+ data types")
+            
+        config_manager = ConfigManager(measurements_config_path)
         if not config_manager.validate_config():
             logging.error("Configuration validation failed")
             sys.exit(1)
@@ -228,7 +236,7 @@ def main():
         )
         
         health_parser = HealthDataParser(config['processing']['timezone'])
-        validator = HealthDataValidator()
+        validator = HealthDataValidator(config_manager)
 
         # Determine if we should use streaming mode
         file_size_mb = Path(args.export_file).stat().st_size / (1024 * 1024)
@@ -243,6 +251,7 @@ def main():
                 validator=validator,
                 influxdb=influxdb,
                 tracker=tracker,
+                config_manager=config_manager,
                 process_batch_size=config_manager.get_batch_size(),
                 checkpoint_interval=10000
             )
@@ -259,10 +268,16 @@ def main():
             validation_stats = validator.get_validation_summary()
             
             logging.info("Streaming import completed:")
-            logging.info(f"  Processing statistics:")
-            logging.info(f"    - Vitals processed: {processing_stats['vitals']}")
-            logging.info(f"    - Activity processed: {processing_stats['activity']}")
-            logging.info(f"    - Sleep processed: {processing_stats['sleep']}")
+            logging.info(f"  Processing statistics by category:")
+            
+            # Show statistics for all configured categories
+            total_processed = 0
+            for category, config in config_manager.get_all_measurement_configs().items():
+                count = processing_stats.get(category, 0)
+                total_processed += count
+                logging.info(f"    - {category.title()} processed: {count} (→ {config.measurement_name})")
+            
+            logging.info(f"    - Unknown types: {processing_stats.get('unknown_types', 0)}")
             logging.info(f"    - Parse errors: {processing_stats['errors']}")
             logging.info(f"  Validation statistics:")
             logging.info(f"    - Total validated: {validation_stats['total_validated']}")
@@ -272,6 +287,9 @@ def main():
             logging.info(f"    - Successfully written: {processing_stats['written']}")
             logging.info(f"    - Duplicates skipped: {processing_stats['duplicates']}")
             logging.info(f"    - Write errors: {processing_stats.get('write_errors', 0)}")
+            logging.info(f"  Summary:")
+            logging.info(f"    - Total records processed: {total_processed}")
+            logging.info(f"    - Coverage: {len(config_manager.get_all_measurement_configs())} measurement categories configured")
             
             return
         

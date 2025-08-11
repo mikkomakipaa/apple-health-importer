@@ -16,76 +16,105 @@ class ValidationResult:
 
 
 class HealthDataValidator:
-    """Validates and cleans Apple Health data."""
+    """Validates and cleans Apple Health data using configuration-driven rules."""
     
-    # Validation rules for different data types
-    VALIDATION_RULES = {
-        'heart_rate': {
-            'min_value': 30,
-            'max_value': 250,
-            'typical_min': 40,
-            'typical_max': 200,
-            'units': 'bpm'
-        },
-        'active_calories': {
-            'min_value': 0,
-            'max_value': 8000,  # Extreme athletes
-            'typical_min': 0,
-            'typical_max': 4000,
-            'units': 'kcal'
-        },
-        'resting_calories': {
-            'min_value': 500,   # Very low BMR
-            'max_value': 3500,  # Very high BMR
-            'typical_min': 1200,
-            'typical_max': 2500,
-            'units': 'kcal'
-        },
-        'workout_duration': {
-            'min_value': 60,    # 1 minute minimum
-            'max_value': 43200, # 12 hours maximum
-            'typical_min': 300, # 5 minutes
-            'typical_max': 7200, # 2 hours
-            'units': 'seconds'
-        },
-        'workout_distance': {
-            'min_value': 0,
-            'max_value': 200000, # 200km (ultra marathon)
-            'typical_min': 100,  # 100m
-            'typical_max': 50000, # 50km
-            'units': 'meters'
-        },
-        'sleep_duration': {
-            'min_value': 30,    # 30 minutes minimum
-            'max_value': 1440,  # 24 hours maximum
-            'typical_min': 240, # 4 hours
-            'typical_max': 720, # 12 hours
-            'units': 'minutes'
-        }
-    }
-    
-    def __init__(self):
+    def __init__(self, config_manager=None):
+        self.config_manager = config_manager
         self.validation_stats = {
             'total_validated': 0,
             'errors': 0,
             'warnings': 0,
             'corrected': 0
         }
+        
+        # Fallback rules for legacy compatibility
+        self._fallback_rules = {
+            'heart_rate': {
+                'min_value': 30,
+                'max_value': 250,
+                'typical_min': 40,
+                'typical_max': 200,
+                'units': 'bpm'
+            },
+            'active_calories': {
+                'min_value': 0,
+                'max_value': 8000,
+                'typical_min': 0,
+                'typical_max': 4000,
+                'units': 'kcal'
+            },
+            'resting_calories': {
+                'min_value': 500,
+                'max_value': 3500,
+                'typical_min': 1200,
+                'typical_max': 2500,
+                'units': 'kcal'
+            },
+            'workout_duration': {
+                'min_value': 60,
+                'max_value': 43200,
+                'typical_min': 300,
+                'typical_max': 7200,
+                'units': 'seconds'
+            },
+            'workout_distance': {
+                'min_value': 0,
+                'max_value': 200000,
+                'typical_min': 100,
+                'typical_max': 50000,
+                'units': 'meters'
+            },
+            'sleep_duration': {
+                'min_value': 30,
+                'max_value': 1440,
+                'typical_min': 240,
+                'typical_max': 720,
+                'units': 'minutes'
+            }
+        }
     
+    def _get_validation_rules(self, data_type: str, field_name: str = 'value') -> Dict:
+        """Get validation rules for a specific data type from config or fallback."""
+        if self.config_manager:
+            # Find the category this data type belongs to
+            category = self.config_manager.find_measurement_category(data_type)
+            if category:
+                config = self.config_manager.get_measurement_config(category)
+                if config and config.validation and config.validation.get('enabled', True):
+                    rules = config.validation.get('rules', {})
+                    if field_name in rules:
+                        return rules[field_name]
+        
+        # Fallback to legacy rules
+        if data_type in ['HKQuantityTypeIdentifierHeartRate']:
+            return self._fallback_rules.get('heart_rate', {})
+        elif data_type in ['HKQuantityTypeIdentifierActiveEnergyBurned']:
+            return self._fallback_rules.get('active_calories', {})
+        elif data_type in ['HKQuantityTypeIdentifierBasalEnergyBurned']:
+            return self._fallback_rules.get('resting_calories', {})
+        elif data_type in ['HKCategoryTypeIdentifierSleepAnalysis']:
+            return self._fallback_rules.get('sleep_duration', {})
+        
+        return {}
+
     def validate_heart_rate(self, value: float, timestamp: str, context: Dict = None) -> ValidationResult:
         """Validate heart rate data."""
-        rules = self.VALIDATION_RULES['heart_rate']
+        rules = self._get_validation_rules('HKQuantityTypeIdentifierHeartRate')
         errors = []
         warnings = []
         corrected_value = None
         
-        # Basic range validation
-        if value < rules['min_value'] or value > rules['max_value']:
-            errors.append(f"Heart rate {value} bpm is outside valid range ({rules['min_value']}-{rules['max_value']} bpm)")
-        
-        # Typical range warnings
-        elif value < rules['typical_min'] or value > rules['typical_max']:
-            warnings.append(f"Heart rate {value} bpm is outside typical range ({rules['typical_min']}-{rules['typical_max']} bpm)")
+        # Only validate if we have rules
+        if rules:
+            # Basic range validation
+            if 'min' in rules and 'max' in rules:
+                if value < rules['min'] or value > rules['max']:
+                    errors.append(f"Heart rate {value} bpm is outside valid range ({rules['min']}-{rules['max']} bpm)")
+            
+            # Typical range warnings
+            elif 'typical_min' in rules and 'typical_max' in rules:
+                if value < rules['typical_min'] or value > rules['typical_max']:
+                    warnings.append(f"Heart rate {value} bpm is outside typical range ({rules['typical_min']}-{rules['typical_max']} bpm)")
         
         # Context-based validation
         if context and 'motion_context' in context:
@@ -210,12 +239,77 @@ class HealthDataValidator:
             warnings=warnings
         )
     
-    def _validate_numeric_field(self, value: Union[int, float], field_type: str) -> ValidationResult:
-        """Generic numeric field validation."""
-        if field_type not in self.VALIDATION_RULES:
+    def validate_generic_data_point(self, data_point: Dict) -> ValidationResult:
+        """Generic validation for any data point using configuration-driven rules."""
+        data_type = data_point.get('type', '')
+        measurement = data_point.get('measurement', '')
+        fields = data_point.get('fields', {})
+        
+        errors = []
+        warnings = []
+        
+        # Skip validation if no config manager
+        if not self.config_manager:
             return ValidationResult(is_valid=True, errors=[], warnings=[])
         
-        rules = self.VALIDATION_RULES[field_type]
+        # Find the category this data type belongs to
+        category = self.config_manager.find_measurement_category(data_type)
+        if not category:
+            # No validation rules for this type
+            return ValidationResult(is_valid=True, errors=[], warnings=[])
+        
+        # Check if validation is enabled for this category
+        if not self.config_manager.is_validation_enabled(category):
+            return ValidationResult(is_valid=True, errors=[], warnings=[])
+        
+        # Get validation rules for this category
+        validation_rules = self.config_manager.get_validation_rules(category)
+        if not validation_rules:
+            return ValidationResult(is_valid=True, errors=[], warnings=[])
+        
+        # Validate each field that has rules
+        for field_name, field_value in fields.items():
+            if field_name in validation_rules and isinstance(field_value, (int, float)):
+                field_rules = validation_rules[field_name]
+                field_result = self._validate_field_with_rules(
+                    field_value, field_name, field_rules, data_type
+                )
+                errors.extend(field_result.errors)
+                warnings.extend(field_result.warnings)
+        
+        return ValidationResult(
+            is_valid=len(errors) == 0,
+            errors=errors,
+            warnings=warnings
+        )
+    
+    def _validate_field_with_rules(self, value: Union[int, float], field_name: str, rules: Dict, data_type: str) -> ValidationResult:
+        """Validate a field against its rules."""
+        errors = []
+        warnings = []
+        
+        # Basic range validation
+        if 'min' in rules and 'max' in rules:
+            if value < rules['min'] or value > rules['max']:
+                errors.append(f"{field_name.replace('_', ' ').title()} {value} is outside valid range ({rules['min']}-{rules['max']}) for {data_type}")
+        
+        # Typical range warnings
+        if 'typical_min' in rules and 'typical_max' in rules and len(errors) == 0:
+            if value < rules['typical_min'] or value > rules['typical_max']:
+                warnings.append(f"{field_name.replace('_', ' ').title()} {value} is outside typical range ({rules['typical_min']}-{rules['typical_max']}) for {data_type}")
+        
+        return ValidationResult(
+            is_valid=len(errors) == 0,
+            errors=errors,
+            warnings=warnings
+        )
+
+    def _validate_numeric_field(self, value: Union[int, float], field_type: str) -> ValidationResult:
+        """Legacy numeric field validation for backward compatibility."""
+        if field_type not in self._fallback_rules:
+            return ValidationResult(is_valid=True, errors=[], warnings=[])
+        
+        rules = self._fallback_rules[field_type]
         errors = []
         warnings = []
         
@@ -237,22 +331,27 @@ class HealthDataValidator:
         data_type = data_point.get('type', '')
         
         try:
-            if 'HeartRate' in data_type:
-                value = data_point.get('fields', {}).get('value', 0)
-                result = self.validate_heart_rate(
-                    value, 
-                    data_point.get('time', ''),
-                    data_point.get('tags', {})
-                )
-            elif 'Workout' in data_type:
-                result = self.validate_workout(data_point)
-            elif 'Sleep' in data_type:
-                result = self.validate_sleep(data_point)
-            elif 'Energy' in data_type:
-                result = self.validate_calories(data_point)
+            # Use configuration-driven validation first
+            if self.config_manager:
+                result = self.validate_generic_data_point(data_point)
             else:
-                # Unknown type, basic validation
-                result = ValidationResult(is_valid=True, errors=[], warnings=[])
+                # Fall back to legacy validation for specific types
+                if 'HeartRate' in data_type:
+                    value = data_point.get('fields', {}).get('value', 0)
+                    result = self.validate_heart_rate(
+                        value, 
+                        data_point.get('time', ''),
+                        data_point.get('tags', {})
+                    )
+                elif 'Workout' in data_type:
+                    result = self.validate_workout(data_point)
+                elif 'Sleep' in data_type:
+                    result = self.validate_sleep(data_point)
+                elif 'Energy' in data_type:
+                    result = self.validate_calories(data_point)
+                else:
+                    # Unknown type, no validation
+                    result = ValidationResult(is_valid=True, errors=[], warnings=[])
             
             # Update statistics
             if result.errors:

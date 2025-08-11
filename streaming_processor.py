@@ -12,6 +12,7 @@ from health_data_parser import HealthDataParser
 from data_validator import HealthDataValidator
 from influxdb_writer import InfluxDBWriter
 from import_tracker import ImportTracker
+from config_manager import ConfigManager
 
 
 class ProgressCheckpoint:
@@ -31,13 +32,11 @@ class ProgressCheckpoint:
                 'processed_activities': 0,
                 'last_checkpoint_time': None,
                 'stats': {
-                    'vitals': 0,
-                    'activity': 0,
-                    'sleep': 0,
                     'errors': 0,
                     'written': 0,
                     'duplicates': 0,
-                    'validation_errors': 0
+                    'validation_errors': 0,
+                    'unknown_types': 0
                 }
             }
         
@@ -57,13 +56,11 @@ class ProgressCheckpoint:
             'processed_activities': 0,
             'last_checkpoint_time': None,
             'stats': {
-                'vitals': 0,
-                'activity': 0,
-                'sleep': 0,
                 'errors': 0,
                 'written': 0,
                 'duplicates': 0,
-                'validation_errors': 0
+                'validation_errors': 0,
+                'unknown_types': 0
             }
         }
     
@@ -100,13 +97,11 @@ class ProgressCheckpoint:
     def get_resume_stats(self) -> Dict:
         """Get accumulated stats from previous processing."""
         return self.checkpoint_data.get('stats', {
-            'vitals': 0,
-            'activity': 0,
-            'sleep': 0,
             'errors': 0,
             'written': 0,
             'duplicates': 0,
-            'validation_errors': 0
+            'validation_errors': 0,
+            'unknown_types': 0
         })
     
     def clear_checkpoint(self) -> None:
@@ -121,26 +116,30 @@ class StreamingHealthDataProcessor:
     
     def __init__(self, parser: HealthDataParser, validator: HealthDataValidator, 
                  influxdb: InfluxDBWriter, tracker: ImportTracker,
+                 config_manager: ConfigManager = None,
                  process_batch_size: int = 5000, checkpoint_interval: int = 10000):
         self.parser = parser
         self.validator = validator
         self.influxdb = influxdb
         self.tracker = tracker
+        self.config_manager = config_manager or ConfigManager()
         self.process_batch_size = process_batch_size  # Records to collect before processing
         self.checkpoint_interval = checkpoint_interval  # Records between checkpoints
         
         self.checkpoint = ProgressCheckpoint()
         
-        # Processing statistics
+        # Initialize stats with all known categories from config
         self.total_stats = {
-            'vitals': 0,
-            'activity': 0,
-            'sleep': 0,
             'errors': 0,
             'written': 0,
             'duplicates': 0,
-            'validation_errors': 0
+            'validation_errors': 0,
+            'unknown_types': 0
         }
+        
+        # Add categories from config
+        for category in self.config_manager.get_all_measurement_configs().keys():
+            self.total_stats[category] = 0
     
     def count_xml_elements(self, file_path: str) -> Dict[str, int]:
         """Count total elements in XML file for progress tracking."""
@@ -207,25 +206,24 @@ class StreamingHealthDataProcessor:
         
         # Filter for incremental import
         if incremental:
-            filtered_data = {'vitals': [], 'activity': [], 'sleep': [], 'errors': []}
+            # Get all configured measurement names
+            measurement_names = set()
+            for config in self.config_manager.get_all_measurement_configs().values():
+                measurement_names.add(config.measurement_name)
             
+            filtered_points = []
             for point in batch_data:
                 measurement = point.get('measurement', '')
                 
-                if measurement == 'heartrate_bpm':
-                    if self.tracker.should_import_record(point['time'], 'heartrate_bpm'):
-                        filtered_data['vitals'].append(point)
-                elif measurement == 'energy_kcal':
-                    if self.tracker.should_import_record(point['time'], 'energy_kcal'):
-                        filtered_data['activity'].append(point)
-                elif measurement == 'sleep_duration_min':
-                    if self.tracker.should_import_record(point['time'], 'sleep_duration_min'):
-                        filtered_data['sleep'].append(point)
+                # Check if this measurement should be imported based on timestamp
+                if measurement in measurement_names:
+                    if self.tracker.should_import_record(point['time'], measurement):
+                        filtered_points.append(point)
+                else:
+                    # Unknown measurement, include it (could be legacy data)
+                    filtered_points.append(point)
             
-            all_points = []
-            all_points.extend(filtered_data['vitals'])
-            all_points.extend(filtered_data['activity'])
-            all_points.extend(filtered_data['sleep'])
+            all_points = filtered_points
         else:
             all_points = batch_data
         
@@ -283,64 +281,108 @@ class StreamingHealthDataProcessor:
                 data = None
                 
                 try:
-                    # Parse element
+                    # Parse element using configuration-driven approach
                     if element_type == 'record':
                         record_type = element.get('type', '')
+                        data = None
                         
-                        if 'HeartRate' in record_type:
-                            data = self.parser.parse_heart_rate(element)
-                            if data:
-                                validation_result = self.validator.validate_data_point(data)
-                                if validation_result.is_valid:
-                                    batch_data.append(data)
-                                    self.total_stats['vitals'] += 1
-                                else:
-                                    self.total_stats['validation_errors'] += 1
-                                    
-                                # Log warnings
-                                for warning in validation_result.warnings:
-                                    if self.validator.config_manager.should_log_warnings():
-                                        logging.warning(f"Data quality warning: {warning}")
+                        # Find the measurement category for this data type
+                        category = self.config_manager.find_measurement_category(record_type)
                         
-                        elif any(energy_type in record_type for energy_type in ['EnergyBurned', 'StepCount']):
-                            data = self.parser.parse_calories(element)
-                            if data:
-                                validation_result = self.validator.validate_data_point(data)
-                                if validation_result.is_valid:
-                                    batch_data.append(data)
-                                    self.total_stats['activity'] += 1
+                        if category:
+                            # Use appropriate parser based on record type prefix
+                            if record_type.startswith('HKQuantityType') or record_type.startswith('HKDataType'):
+                                data = self.parser.parse_generic_quantity(element)
+                            elif record_type.startswith('HKCategoryType'):
+                                data = self.parser.parse_category(element)
+                            else:
+                                # Fallback to legacy parsers for backward compatibility
+                                if 'HeartRate' in record_type:
+                                    data = self.parser.parse_heart_rate(element)
+                                elif any(energy_type in record_type for energy_type in ['EnergyBurned', 'StepCount']):
+                                    data = self.parser.parse_calories(element)
+                                elif 'Sleep' in record_type:
+                                    data = self.parser.parse_sleep(element)
                                 else:
-                                    self.total_stats['validation_errors'] += 1
-                        
-                        elif 'Sleep' in record_type:
-                            data = self.parser.parse_sleep(element)
+                                    # Use generic quantity parser as fallback
+                                    data = self.parser.parse_generic_quantity(element)
+                            
                             if data:
-                                validation_result = self.validator.validate_data_point(data)
-                                if validation_result.is_valid:
-                                    batch_data.append(data)
-                                    self.total_stats['sleep'] += 1
+                                # Override measurement name with config
+                                config = self.config_manager.get_measurement_config(category)
+                                if config:
+                                    data['measurement'] = config.measurement_name
+                                
+                                # Validate data if enabled for this category
+                                if self.config_manager.is_validation_enabled(category):
+                                    validation_result = self.validator.validate_data_point(data)
+                                    if validation_result.is_valid:
+                                        batch_data.append(data)
+                                        self.total_stats[category] += 1
+                                        
+                                        # Log warnings if configured
+                                        if self.config_manager.should_log_warnings():
+                                            for warning in validation_result.warnings:
+                                                logging.warning(f"Data quality warning for {record_type}: {warning}")
+                                    else:
+                                        self.total_stats['validation_errors'] += 1
+                                        if self.config_manager.should_log_warnings():
+                                            for error in validation_result.errors:
+                                                logging.warning(f"Validation error for {record_type}: {error}")
                                 else:
-                                    self.total_stats['validation_errors'] += 1
+                                    # Skip validation, add directly
+                                    batch_data.append(data)
+                                    self.total_stats[category] += 1
+                        else:
+                            # Unknown data type - log for configuration improvement
+                            self.total_stats['unknown_types'] += 1
+                            if logging.getLogger().isEnabledFor(logging.DEBUG):
+                                logging.debug(f"Unknown data type not in config: {record_type}")
                         
                         processed_counts['records'] = position
                     
                     elif element_type == 'workout':
+                        # Workouts are categorized as 'workouts' in the comprehensive config
+                        category = self.config_manager.find_measurement_category('HKWorkoutTypeIdentifier')
+                        if not category:
+                            category = 'workouts'  # Default fallback
+                            
                         data = self.parser.parse_workout(element)
                         if data:
-                            validation_result = self.validator.validate_data_point(data)
-                            if validation_result.is_valid:
-                                batch_data.append(data)
-                                self.total_stats['activity'] += 1
+                            # Override measurement name with config
+                            config = self.config_manager.get_measurement_config(category)
+                            if config:
+                                data['measurement'] = config.measurement_name
+                                
+                            # Validate if enabled for this category
+                            if self.config_manager.is_validation_enabled(category):
+                                validation_result = self.validator.validate_data_point(data)
+                                if validation_result.is_valid:
+                                    batch_data.append(data)
+                                    self.total_stats[category] += 1
+                                else:
+                                    self.total_stats['validation_errors'] += 1
                             else:
-                                self.total_stats['validation_errors'] += 1
+                                batch_data.append(data)
+                                self.total_stats[category] += 1
                         
                         processed_counts['workouts'] = position
                     
                     elif element_type == 'activity':
+                        # Activity summaries are categorized as 'workouts' in the comprehensive config
+                        category = self.config_manager.find_measurement_category('HKActivitySummary')
+                        if not category:
+                            category = 'workouts'  # Default fallback
+                            
                         data = self.parser.parse_activity(element)
                         if data:
+                            # Override measurement name with config
+                            config = self.config_manager.get_measurement_config(category)
+                            if config:
+                                data['measurement'] = config.measurement_name
+                                
                             batch_data.append(data)
-                            self.total_stats['activity'] += 1
+                            self.total_stats[category] += 1
                         
                         processed_counts['activities'] = position
                     
@@ -368,8 +410,11 @@ class StreamingHealthDataProcessor:
                     last_checkpoint = current_processed
                 
                 # Preview mode - process only first batch
-                if preview and self.total_stats['vitals'] + self.total_stats['activity'] + self.total_stats['sleep'] >= 100:
-                    break
+                if preview:
+                    total_processed = sum(self.total_stats[key] for key in self.total_stats 
+                                        if key not in ['errors', 'written', 'duplicates', 'validation_errors', 'unknown_types'])
+                    if total_processed >= 100:
+                        break
             
             # Process remaining batch
             if batch_data and not preview:
@@ -408,8 +453,10 @@ class StreamingHealthDataProcessor:
         """Create minimal data points structure for timestamp tracking."""
         # This is a simplified version just for timestamp tracking
         # In a real scenario, we'd need to track the latest timestamps during processing
-        return {
-            'vitals': [],
-            'activity': [],
-            'sleep': []
-        }
+        data_points = {}
+        
+        # Initialize with all configured categories
+        for category in self.config_manager.get_all_measurement_configs().keys():
+            data_points[category] = []
+            
+        return data_points

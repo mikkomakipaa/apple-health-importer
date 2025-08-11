@@ -128,8 +128,101 @@ class HealthDataParser:
             logging.error(f"Error parsing activity record: {e}")
             return None
             
+    def parse_generic_quantity(self, record: ET.Element) -> Optional[Dict[str, Union[str, Dict]]]:
+        """Parse any quantity-type record based on dynamic configuration."""
+        record_type = record.get('type', '')
+        
+        # Validate required attributes
+        if not all([record.get('value'), record.get('startDate')]):
+            logging.warning(f"{record_type} record missing required attributes")
+            return None
+            
+        try:
+            value = float(record.get('value', 0))
+            start_date = self.parse_datetime(record.get('startDate'))
+            
+            # Create base data structure
+            data = {
+                'measurement': 'generic_quantity',  # Will be overridden by config
+                'type': record_type,
+                'time': start_date.isoformat(),
+                'fields': {
+                    'value': value
+                },
+                'tags': {
+                    'source': record.get('sourceName', ''),
+                    'unit': record.get('unit', ''),
+                    'device': record.get('device', '')
+                }
+            }
+            
+            # Add record-type specific tags
+            if 'Energy' in record_type:
+                data['tags']['energy_type'] = 'active' if 'Active' in record_type else 'resting'
+            elif 'Distance' in record_type:
+                data['tags']['distance_type'] = record_type.replace('HKQuantityTypeIdentifierDistance', '').lower()
+            elif 'HeartRate' in record_type:
+                data['tags']['heart_rate_type'] = record_type.replace('HKQuantityTypeIdentifierHeartRate', '').lower() or 'standard'
+            elif 'Walking' in record_type or 'Running' in record_type:
+                data['tags']['movement_type'] = 'walking' if 'Walking' in record_type else 'running'
+            elif 'Apple' in record_type:
+                data['tags']['apple_metric'] = record_type.replace('HKQuantityTypeIdentifierApple', '').lower()
+            
+            return data
+            
+        except (ValueError, TypeError, AttributeError) as e:
+            logging.error(f"Error parsing {record_type} record: {e}")
+            return None
+    
+    def parse_category(self, record: ET.Element) -> Optional[Dict[str, Union[str, Dict]]]:
+        """Parse category-type records (sleep, audio events, etc.)."""
+        record_type = record.get('type', '')
+        
+        # Validate required attributes
+        if not all([record.get('startDate'), record.get('endDate')]):
+            logging.warning(f"{record_type} record missing required date attributes")
+            return None
+            
+        try:
+            start_date = self.parse_datetime(record.get('startDate'))
+            end_date = self.parse_datetime(record.get('endDate'))
+            duration_minutes = (end_date - start_date).total_seconds() / self.MINUTES_TO_SECONDS
+            
+            # Get category value
+            category_value = record.get('value', 'Unknown')
+            
+            data = {
+                'measurement': 'generic_category',  # Will be overridden by config
+                'type': record_type,
+                'time': start_date.isoformat(),
+                'fields': {
+                    'duration': duration_minutes,
+                    'value': 1  # Category presence indicator
+                },
+                'tags': {
+                    'source': record.get('sourceName', ''),
+                    'device': record.get('device', ''),
+                    'category_value': category_value
+                }
+            }
+            
+            # Add type-specific tags
+            if 'Sleep' in record_type:
+                data['tags']['sleep_state'] = category_value
+                data['fields']['quality'] = 1 if 'Asleep' in category_value else 0
+            elif 'Audio' in record_type:
+                data['tags']['exposure_event'] = category_value
+            elif 'Stand' in record_type:
+                data['tags']['stand_hour'] = category_value
+                
+            return data
+            
+        except (ValueError, TypeError, AttributeError) as e:
+            logging.error(f"Error parsing {record_type} category record: {e}")
+            return None
+    
     def parse_calories(self, record: ET.Element) -> Optional[Dict[str, Union[str, Dict]]]:
-        """Parse calorie-related records."""
+        """Parse calorie-related records - legacy method for backward compatibility."""
         calorie_types = [
             'HKQuantityTypeIdentifierBasalEnergyBurned',
             'HKQuantityTypeIdentifierActiveEnergyBurned'
@@ -137,61 +230,23 @@ class HealthDataParser:
         
         if record.get('type') not in calorie_types:
             return None
+            
+        return self.parse_generic_quantity(record)
+            
+    def parse_sleep(self, record: ET.Element) -> Optional[Dict[str, Union[str, Dict]]]:
+        """Parse sleep analysis record - legacy method for backward compatibility."""
+        sleep_types = [
+            'HKCategoryTypeIdentifierSleepAnalysis',
+            'HKQuantityTypeIdentifierAppleSleepingWristTemperature',
+            'HKQuantityTypeIdentifierAppleSleepingBreathingDisturbances',
+            'HKDataTypeSleepDurationGoal'
+        ]
         
-        # Validate required attributes
-        if not all([record.get('value'), record.get('startDate')]):
-            logging.warning("Calorie record missing required attributes")
+        if record.get('type') not in sleep_types:
             return None
             
-        try:
-            value = float(record.get('value', 0))
-            if value < 0 or value > 10000:  # Basic calorie validation
-                logging.warning(f"Invalid calorie value: {value}")
-                return None
-                
-            start_date = self.parse_datetime(record.get('startDate'))
-            record_type = record.get('type')
-            
-            return {
-                'measurement': 'energy_kcal',
-                'type': record_type,
-                'time': start_date.isoformat(),
-                'fields': {
-                    'value': value
-                },
-                'tags': {
-                    'energy_type': 'active' if 'Active' in record_type else 'resting',
-                    'source': record.get('sourceName')
-                }
-            }
-        except (ValueError, TypeError, AttributeError) as e:
-            logging.error(f"Error parsing calorie record: {e}")
-            return None
-            
-    def parse_sleep(self, record: ET.Element) -> Optional[Dict[str, Union[str, Dict]]:
-        """Parse sleep analysis record."""
-        if record.get('type') != 'HKCategoryTypeIdentifierSleepAnalysis':
-            return None
-            
-        try:
-            start_date = self.parse_datetime(record.get('startDate'))
-            end_date = self.parse_datetime(record.get('endDate'))
-            value = record.get('value')
-            duration_minutes = (end_date - start_date).total_seconds() / self.MINUTES_TO_SECONDS
-            
-            return {
-                'measurement': 'sleep_duration_min',
-                'type': 'HKCategoryTypeIdentifierSleepAnalysis',
-                'time': start_date.isoformat(),
-                'fields': {
-                    'value': duration_minutes,
-                    'quality': 1 if value == 'HKCategoryValueSleepAnalysisAsleep' else 0
-                },
-                'tags': {
-                    'state': value,
-                    'source': record.get('sourceName')
-                }
-            }
-        except (ValueError, TypeError, AttributeError) as e:
-            logging.error(f"Error parsing sleep record: {e}")
-            return None 
+        # Use appropriate parser based on type
+        if record.get('type') == 'HKCategoryTypeIdentifierSleepAnalysis':
+            return self.parse_category(record)
+        else:
+            return self.parse_generic_quantity(record) 
