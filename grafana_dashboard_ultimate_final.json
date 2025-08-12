@@ -366,7 +366,7 @@
                 "type": "influxdb",
                 "uid": "health"
               },
-              "query": "SELECT last(\"resting_heart_rate\") FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierRestingHeartRate' AND time >= now() - 1d",
+              "query": "SELECT last(\"resting_heart_rate\") FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierRestingHeartRate' AND time >= now() - 7d",
               "rawQuery": true,
               "refId": "A",
               "resultFormat": "time_series"
@@ -435,7 +435,7 @@
                 "type": "influxdb",
                 "uid": "health"
               },
-              "query": "SELECT last(\"hrv_sdnn\") FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN' AND time >= now() - 1d",
+              "query": "SELECT last(\"hrv_sdnn\") FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN' AND time >= now() - 7d",
               "rawQuery": true,
               "refId": "A",
               "resultFormat": "time_series"
@@ -774,7 +774,7 @@
                 "type": "influxdb",
                 "uid": "health"
               },
-              "query": "\n                SELECT \n                    ((COALESCE(hrv_score, 50) * 0.4) + (COALESCE(rhr_score, 50) * 0.3) + (COALESCE(sleep_score, 50) * 0.3)) as \"Readiness Score\"\n                FROM (\n                    SELECT \n                        last(\"hrv_sdnn\") * 1.2 as hrv_score,\n                        (100 - last(\"resting_heart_rate\")) as rhr_score,\n                        last(\"duration\")/60 * 12.5 as sleep_score\n                    FROM \"heart_metrics\", \"sleep_metrics\" \n                    WHERE time >= now() - 1d\n                )\n                ",
+              "query": "\n                SELECT \n                    ((COALESCE(hrv_score, 50) * 0.4) + (COALESCE(rhr_score, 50) * 0.3) + (COALESCE(sleep_score, 50) * 0.3)) as \"Readiness Score\"\n                FROM (\n                    SELECT \n                        last(\"hrv_sdnn\") * 1.2 as hrv_score,\n                        (100 - last(\"resting_heart_rate\")) as rhr_score,\n                        last(\"duration\")/60 * 12.5 as sleep_score\n                    FROM \"heart_metrics\", \"sleep_metrics\" \n                    WHERE time >= now() - 7d\n                )\n                ",
               "rawQuery": true,
               "refId": "A",
               "resultFormat": "time_series"
