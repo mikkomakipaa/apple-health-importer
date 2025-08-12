@@ -1,6 +1,6 @@
-# Apple Health Data Importer
+# 🏥 Apple Health Data Importer & Analytics Platform
 
-A robust, enterprise-grade Python tool that imports Apple Health data into InfluxDB and Home Assistant. Designed to handle large exports (1GB+) efficiently with streaming processing, duplicate detection, and comprehensive data validation.
+Professional Apple Health data importer with comprehensive Grafana dashboards for health analytics and performance optimization. Transform your iPhone health data into enterprise-grade insights with advanced metrics like readiness scoring, training load analysis, and stress monitoring.
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
