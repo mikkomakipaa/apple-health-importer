@@ -1,0 +1,2199 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 1
+          },
+          "id": 2,
+          "panels": [],
+          "title": "\ud83d\udcca Today's Summary",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "short"
+            }
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 0,
+            "y": 2
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": true,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "health"
+              },
+              "query": "SELECT last(\"steps\") FROM \"movement_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierStepCount' AND time >= now() - 1d",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Steps",
+          "type": "stat",
+          "id": 3
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "kcal"
+            }
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 6,
+            "y": 6
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": true,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "health"
+              },
+              "query": "SELECT last(\"active_energy\") FROM \"energy_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierActiveEnergyBurned' AND time >= now() - 1d",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Active kcal",
+          "type": "stat",
+          "id": 4
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "h"
+            }
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 12,
+            "y": 10
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": true,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "health"
+              },
+              "query": "SELECT last(\"stand_time\") FROM \"energy_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierAppleStandTime' AND time >= now() - 1d",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Stand Hours",
+          "type": "stat",
+          "id": 5
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "min"
+            }
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 18,
+            "y": 14
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": true,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "health"
+              },
+              "query": "SELECT last(\"exercise_time\") FROM \"energy_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierAppleExerciseTime' AND time >= now() - 1d",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Exercise Min",
+          "type": "stat",
+          "id": 6
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "bpm"
+            }
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 0,
+            "y": 22
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": true,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "health"
+              },
+              "query": "SELECT last(\"resting_heart_rate\") FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierRestingHeartRate' AND time >= now() - 1d",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "RHR",
+          "type": "stat",
+          "id": 7
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "ms"
+            }
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 6,
+            "y": 30
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": true,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "health"
+              },
+              "query": "SELECT last(\"hrv_sdnn\") FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN' AND time >= now() - 1d",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "HRV",
+          "type": "stat",
+          "id": 8
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "h"
+            }
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 12,
+            "y": 38
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": true,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "health"
+              },
+              "query": "SELECT sum(\"duration\")/60 FROM \"sleep_metrics\" WHERE \"type\" = 'HKCategoryTypeIdentifierSleepAnalysis' AND time >= now() - 1d",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Sleep Duration",
+          "type": "stat",
+          "id": 9
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 50
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "%"
+            }
+          },
+          "gridPos": {
+            "h": 4,
+            "w": 6,
+            "x": 18,
+            "y": 46
+          },
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showPercentChange": true,
+            "textMode": "auto",
+            "wideLayout": true
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "health"
+              },
+              "query": "SELECT mean(\"oxygen_saturation\") FROM \"respiratory_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierOxygenSaturation' AND time >= now() - 1d",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "SpO\u2082 Avg",
+          "type": "stat",
+          "id": 10
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 58
+          },
+          "id": 11,
+          "panels": [],
+          "title": "\ud83d\udc93 Heart Rate Overview",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "BPM",
+                "axisPlacement": "auto",
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "opacity",
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "area"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "blue",
+                    "value": null
+                  },
+                  {
+                    "color": "green",
+                    "value": 100
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 140
+                  },
+                  {
+                    "color": "orange",
+                    "value": 160
+                  },
+                  {
+                    "color": "red",
+                    "value": 180
+                  }
+                ]
+              },
+              "unit": "bpm"
+            }
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 59
+          },
+          "options": {
+            "legend": {
+              "calcs": [
+                "mean",
+                "max",
+                "min"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "multi",
+              "sort": "desc"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "health"
+              },
+              "query": "SELECT mean(\"heart_rate\") AS \"Heart Rate\" FROM \"heart_metrics\" WHERE $timeFilter AND \"type\" = 'HKQuantityTypeIdentifierHeartRate' GROUP BY time($__interval) fill(null)",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "All-Day Heart Rate with Zones",
+          "type": "timeseries",
+          "id": 12
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 79
+          },
+          "id": 13,
+          "panels": [],
+          "title": "\ud83c\udfaf Performance Metrics",
+          "type": "row"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              },
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "red",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 40
+                  },
+                  {
+                    "color": "green",
+                    "value": 70
+                  }
+                ]
+              },
+              "unit": "percent"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 0,
+            "y": 80
+          },
+          "options": {
+            "minVizHeight": 75,
+            "minVizWidth": 75,
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true,
+            "text": {}
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "health"
+              },
+              "query": "\n                SELECT \n                    ((COALESCE(hrv_score, 50) * 0.4) + (COALESCE(rhr_score, 50) * 0.3) + (COALESCE(sleep_score, 50) * 0.3)) as \"Readiness Score\"\n                FROM (\n                    SELECT \n                        last(\"hrv_sdnn\") * 1.2 as hrv_score,\n                        (100 - last(\"resting_heart_rate\")) as rhr_score,\n                        last(\"duration\")/60 * 12.5 as sleep_score\n                    FROM \"heart_metrics\", \"sleep_metrics\" \n                    WHERE time >= now() - 1d\n                )\n                ",
+              "rawQuery": true,
+              "refId": "A",
+              "resultFormat": "time_series"
+            }
+          ],
+          "title": "Readiness Score",
+          "type": "gauge",
+          "id": 14
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "mappings": [
+                {
+                  "options": {
+                    "from": 0.8,
+                    "to": 1.3
+                  },
+                  "type": "range",
+                  "result": {
+                    "text": "Optimal"
+                  }
+                },
+                {
+                  "options": {
+                    "from": 1.3,
+                    "to": 1.5
+                  },
+                  "type": "range",
+                  "result": {
+                    "text": "Caution"
+                  }
+                },
+                {
+                  "options": {
+                    "from": 1.5,
+                    "to": null
+                  },
+                  "type": "range",
+                  "result": {
+                    "text": "High Risk"
+                  }
+                }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 1.3
+                  },
+                  {
+                    "color": "red",
+                    "value": 1.5
+                  }
+                ]
+              },
+              "unit": "none"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 8,
+            "y": 88
+          },
+          "options": {
+            "colorMode": "background",
+            "graphMode": "area",
+            "justifyMode": "center",
+            "orientation": "horizontal",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ]
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "health"
+              },
+              "query": "\n                SELECT \n                    (acute_load / chronic_load) as \"ACWR\"\n                FROM (\n                    SELECT \n                        mean(\"duration\") * mean(\"value\") as acute_load\n                    FROM \"workout_sessions\" \n                    WHERE time >= now() - 7d\n                ),\n                (\n                    SELECT \n                        mean(\"duration\") * mean(\"value\") as chronic_load\n                    FROM \"workout_sessions\" \n                    WHERE time >= now() - 28d\n                )\n                ",
+              "rawQuery": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Training Load (ACWR)",
+          "type": "stat",
+          "id": 15
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineWidth": 1
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  }
+                ]
+              },
+              "unit": "min"
+            }
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 8,
+            "x": 16,
+            "y": 96
+          },
+          "options": {
+            "barRadius": 0,
+            "barWidth": 0.97,
+            "groupWidth": 0.7,
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom"
+            },
+            "orientation": "vertical",
+            "showValue": "auto",
+            "stacking": "none",
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "influxdb",
+                "uid": "health"
+              },
+              "query": "SELECT sum(\"exercise_time\") as \"Exercise Minutes\" FROM \"energy_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierAppleExerciseTime' AND $timeFilter GROUP BY time(1d) fill(0)",
+              "rawQuery": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Weekly Exercise Streak",
+          "type": "barchart",
+          "id": 16
+        }
+      ],
+      "title": "\ud83d\udcca 1. Overview (Today's Summary)",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 17,
+      "panels": [],
+      "title": "\ud83c\udfc3\u200d\u2642\ufe0f 2. Training & Performance",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 2
+      },
+      "id": 18,
+      "panels": [],
+      "title": "\ud83c\udfc3\u200d\u2642\ufe0f Workout Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "center",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Duration"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Distance"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "m"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 3
+      },
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "time"
+          }
+        ]
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "\n                SELECT \n                    \"activity_type\" as \"Type\",\n                    \"duration\" as \"Duration\", \n                    \"distance\" as \"Distance\",\n                    \"value\" as \"Energy\",\n                    time as \"Date\"\n                FROM \"workout_sessions\" \n                WHERE $timeFilter \n                ORDER BY time DESC\n                LIMIT 50\n                ",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Recent Workouts (Last 30 Days)",
+      "type": "table",
+      "id": 19
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 27
+      },
+      "id": 20,
+      "panels": [],
+      "title": "\ud83d\udcc8 Training Load Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Training Load",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "auto"
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean"
+          ],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "\n                    SELECT \n                        mean(\"duration\" * \"value\" / 1000) as \"Acute Load (7d)\"\n                    FROM \"workout_sessions\" \n                    WHERE $timeFilter \n                    GROUP BY time(1d)\n                    ",
+          "rawQuery": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "\n                    SELECT \n                        mean(\"duration\" * \"value\" / 4000) as \"Chronic Load (28d)\"\n                    FROM \"workout_sessions\" \n                    WHERE time >= now() - 28d \n                    GROUP BY time(1d)\n                    ",
+          "rawQuery": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Training Load (TSB Style)",
+      "type": "timeseries",
+      "id": 21
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-GrYlRd"
+          },
+          "custom": {
+            "axisLabel": "ml/kg/min",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineWidth": 3,
+            "showPoints": "auto"
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT mean(\"vo2_max\") as \"VO\u2082 Max\" FROM \"fitness_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierVO2Max' AND $timeFilter GROUP BY time(7d) fill(null)",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "title": "VO\u2082 Max Trend (12-week rolling)",
+      "type": "timeseries",
+      "id": 22
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 52
+      },
+      "id": 23,
+      "panels": [],
+      "title": "\ud83d\ude34 3. Recovery & Sleep",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "id": 24,
+      "panels": [],
+      "title": "\ud83d\ude34 Sleep Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "unit": "h"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 0,
+        "y": 54
+      },
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "orientation": "vertical",
+        "showValue": "never",
+        "stacking": "normal"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "\n                SELECT \n                    sum(\"duration\")/60 as \"Total Sleep\"\n                FROM \"sleep_metrics\" \n                WHERE \"type\" = 'HKCategoryTypeIdentifierSleepAnalysis' AND \"sleep_state\" = 'HKCategoryValueSleepAnalysisAsleep'\n                AND $timeFilter \n                GROUP BY time(1d) fill(0)\n                ",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Sleep Duration & Efficiency",
+      "type": "barchart",
+      "id": 25
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "fillOpacity": 70,
+            "lineWidth": 0,
+            "spanNulls": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "0": {
+                  "color": "light-blue",
+                  "index": 0,
+                  "text": "Awake"
+                },
+                "1": {
+                  "color": "dark-blue",
+                  "index": 1,
+                  "text": "Asleep"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "light-blue",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 62
+      },
+      "options": {
+        "alignValue": "center",
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "mergeValues": true,
+        "rowHeight": 0.9,
+        "showValue": "never"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT mean(\"value\") as \"Sleep State\" FROM \"sleep_metrics\" WHERE \"type\" = 'HKCategoryTypeIdentifierSleepAnalysis' AND $timeFilter GROUP BY time(10m), \"sleep_state\" fill(null)",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Sleep Timeline",
+      "type": "state-timeline",
+      "id": 26
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 78
+      },
+      "id": 27,
+      "panels": [],
+      "title": "\ud83d\udc93 Recovery Metrics",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "showPoints": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "HRV SDNN"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Resting HR"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "bpm"
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 79
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "last"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT mean(\"hrv_sdnn\") as \"HRV SDNN\" FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN' AND $timeFilter GROUP BY time($__interval) fill(null)",
+          "rawQuery": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT mean(\"resting_heart_rate\") as \"Resting HR\" FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierRestingHeartRate' AND $timeFilter GROUP BY time($__interval) fill(null)",
+          "rawQuery": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Nightly HRV & RHR with Baseline",
+      "type": "timeseries",
+      "id": 28
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlPu"
+          },
+          "custom": {
+            "drawStyle": "points",
+            "lineWidth": 2,
+            "pointSize": 8,
+            "showPoints": "always"
+          },
+          "unit": "bpm"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 87
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "count"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT \"value\" as \"1-Min Recovery\" FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRateRecoveryOneMinute' AND $timeFilter",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Heart Rate Recovery (Post-Workout)",
+      "type": "timeseries",
+      "id": 29
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 103
+      },
+      "id": 30,
+      "panels": [],
+      "title": "\ud83c\udfe5 4. Daily Health Markers",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 104
+      },
+      "id": 31,
+      "panels": [],
+      "title": "\ud83c\udfe5 Health Vitals",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGn",
+            "reverse": true
+          },
+          "custom": {
+            "axisLabel": "BPM",
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "lineWidth": 3,
+            "showPoints": "auto"
+          },
+          "unit": "bpm"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 105
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT mean(\"resting_heart_rate\") as \"Resting HR\" FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierRestingHeartRate' AND $timeFilter GROUP BY time(1d) fill(null)",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Resting HR (28-day trend)",
+      "type": "timeseries",
+      "id": 32
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "%",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "showPoints": "auto"
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 113
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "min"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT mean(\"oxygen_saturation\") as \"SpO\u2082 Average\" FROM \"respiratory_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierOxygenSaturation' AND $timeFilter GROUP BY time(1d) fill(null)",
+          "rawQuery": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT min(\"oxygen_saturation\") as \"SpO\u2082 Minimum\" FROM \"respiratory_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierOxygenSaturation' AND $timeFilter GROUP BY time(1d) fill(null)",
+          "rawQuery": true,
+          "refId": "B"
+        }
+      ],
+      "title": "SpO\u2082 Nightly Average & Minimum",
+      "type": "timeseries",
+      "id": 33
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlYlRd"
+          },
+          "custom": {
+            "axisLabel": "breaths/min",
+            "drawStyle": "line",
+            "fillOpacity": 15,
+            "lineWidth": 2,
+            "showPoints": "auto",
+            "thresholdsStyle": {
+              "mode": "area"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 12
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "respirations"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 129
+      },
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "stdDev"
+          ],
+          "displayMode": "table",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT mean(\"respiratory_rate\") as \"Respiratory Rate\" FROM \"respiratory_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierRespiratoryRate' AND $timeFilter GROUP BY time($__interval) fill(null)",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Respiratory Rate with Anomaly Detection",
+      "type": "timeseries",
+      "id": 34
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 145
+      },
+      "id": 35,
+      "panels": [],
+      "title": "\ud83e\udde0 5. Stress & Readiness",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 146
+      },
+      "id": 36,
+      "panels": [],
+      "title": "\ud83e\udde0 Stress Analysis",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlBu"
+          },
+          "custom": {
+            "drawStyle": "points",
+            "pointSize": 6,
+            "showPoints": "always"
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 147
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "\n                SELECT \n                    (\"hrv_sdnn\" / \"heart_rate\" * 100) as \"Stress Index\"\n                FROM \"heart_metrics\" \n                WHERE $timeFilter AND \"hrv_sdnn\" IS NOT NULL AND \"heart_rate\" IS NOT NULL\n                ",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Daytime Stress Proxy (HRV/HR Ratio)",
+      "type": "timeseries",
+      "id": 37
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          },
+          "max": 100,
+          "min": 0,
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 155
+      },
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "orientation": "vertical",
+        "showValue": "auto",
+        "stacking": "normal"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT last(\"hrv_sdnn\") * 1.2 as \"HRV Score\" FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN' AND $timeFilter GROUP BY time(1d)",
+          "rawQuery": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT (100 - last(\"resting_heart_rate\")) as \"RHR Score\" FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierRestingHeartRate' AND $timeFilter GROUP BY time(1d)",
+          "rawQuery": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT (sum(\"duration\")/60 * 12.5) as \"Sleep Score\" FROM \"sleep_metrics\" WHERE \"type\" = 'HKCategoryTypeIdentifierSleepAnalysis' AND $timeFilter GROUP BY time(1d)",
+          "rawQuery": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Readiness Score Breakdown",
+      "type": "barchart",
+      "id": 38
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 171
+      },
+      "id": 39,
+      "panels": [],
+      "title": "\ud83d\udd0d 6. Data Quality & Ops",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 172
+      },
+      "id": 40,
+      "panels": [],
+      "title": "\ud83d\udd0d Data Quality Monitoring",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-RdYlGn",
+            "reverse": true
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": [],
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 16,
+        "x": 0,
+        "y": 173
+      },
+      "options": {
+        "calculate": false,
+        "calculation": {},
+        "cellGap": 2,
+        "cellValues": {
+          "unit": "percent"
+        },
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-orange",
+          "mode": "continuous",
+          "reverse": false,
+          "scheme": "RdYlGn",
+          "steps": 64
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-09
+        },
+        "legend": {
+          "show": false
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "\n                SELECT \n                    (COUNT(\"heart_rate\") * 100.0 / 1440) as \"heart_metrics\",\n                    (COUNT(\"steps\") * 100.0 / 1440) as \"movement_metrics\",\n                    (COUNT(\"duration\") * 100.0 / 24) as \"sleep_metrics\"\n                FROM \"heart_metrics\", \"movement_metrics\", \"sleep_metrics\"\n                WHERE $timeFilter \n                GROUP BY time(1h) fill(0)\n                ",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Data Completeness Heatmap (by hour)",
+      "type": "heatmap",
+      "id": 41
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 300
+              },
+              {
+                "color": "red",
+                "value": 900
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 181
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ]
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "SELECT (now() - max(time)) as \"Data Lag\" FROM \"heart_metrics\"",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Data Freshness",
+      "type": "stat",
+      "id": 42
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "points",
+            "pointSize": 8,
+            "showPoints": "always"
+          },
+          "unit": "short"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 16,
+        "y": 189
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "\n                SELECT \n                    ABS(\"heart_rate\" - mean(\"heart_rate\")) / stddev(\"heart_rate\") as \"HR Z-Score\"\n                FROM \"heart_metrics\" \n                WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRate' AND $timeFilter\n                HAVING ABS(\"heart_rate\" - mean(\"heart_rate\")) / stddev(\"heart_rate\") > 3\n                ",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Outlier Detection (Z-Score > 3)",
+      "type": "timeseries",
+      "id": 43
+    },
+    {
+      "datasource": {
+        "type": "influxdb",
+        "uid": "health"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 201
+      },
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "health"
+          },
+          "query": "\n                SELECT \n                    'heart_metrics' as \"Measurement\",\n                    COUNT(*) as \"Records\",\n                    min(time) as \"First Record\", \n                    max(time) as \"Last Record\"\n                FROM \"heart_metrics\"\n                UNION ALL\n                SELECT \n                    'movement_metrics' as \"Measurement\",\n                    COUNT(*) as \"Records\", \n                    min(time) as \"First Record\",\n                    max(time) as \"Last Record\"\n                FROM \"movement_metrics\"\n                ",
+          "rawQuery": true,
+          "refId": "A",
+          "resultFormat": "table"
+        }
+      ],
+      "title": "Data Source Statistics",
+      "type": "table",
+      "id": 44
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "health",
+    "apple",
+    "ultimate",
+    "comprehensive"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "Apple Health Ultimate Dashboard (Data Source Fixed)",
+  "uid": "apple_health_ultimate",
+  "version": 2,
+  "weekStart": ""
+}
