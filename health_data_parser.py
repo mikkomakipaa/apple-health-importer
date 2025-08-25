@@ -14,8 +14,17 @@ class HealthDataParser:
         
     def parse_datetime(self, date_str: str) -> datetime:
         """Convert Apple Health datetime string to timezone-aware datetime object."""
-        dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S %z")
-        return dt.astimezone(self.timezone)
+        try:
+            dt = datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S %z")
+            return dt.astimezone(self.timezone)
+        except ValueError as e:
+            # Try alternative ISO format
+            try:
+                dt = datetime.fromisoformat(date_str.replace('Z', '+00:00'))
+                return dt.astimezone(self.timezone)
+            except ValueError:
+                logging.error(f"Unable to parse datetime: {date_str}")
+                raise ValueError(f"Cannot parse datetime format: {date_str}")
     
     def parse_heart_rate(self, record: ET.Element) -> Optional[Dict[str, Union[str, Dict]]]:
         """Parse heart rate record."""
@@ -29,7 +38,7 @@ class HealthDataParser:
             
         try:
             value = float(record.get('value'))
-            if value <= 0 or value > 300:  # Basic heart rate validation
+            if value <= 0 or value > 400:  # More lenient validation for sleep HR
                 logging.warning(f"Invalid heart rate value: {value}")
                 return None
                 
@@ -186,7 +195,7 @@ class HealthDataParser:
         try:
             start_date = self.parse_datetime(record.get('startDate'))
             end_date = self.parse_datetime(record.get('endDate'))
-            duration_minutes = (end_date - start_date).total_seconds() / self.MINUTES_TO_SECONDS
+            duration_seconds = (end_date - start_date).total_seconds()  # Keep in seconds for consistency
             
             # Get category value
             category_value = record.get('value', 'Unknown')
@@ -196,7 +205,7 @@ class HealthDataParser:
                 'type': record_type,
                 'time': start_date.isoformat(),
                 'fields': {
-                    'duration': duration_minutes,
+                    'duration': duration_seconds,  # Store in seconds consistently
                     'value': 1  # Category presence indicator
                 },
                 'tags': {
