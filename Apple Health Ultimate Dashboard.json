@@ -85,7 +85,7 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": true,
+        "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
@@ -156,7 +156,7 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": true,
+        "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
@@ -227,7 +227,7 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": true,
+        "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
@@ -298,7 +298,7 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": true,
+        "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
@@ -369,7 +369,7 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": true,
+        "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
@@ -440,7 +440,7 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": true,
+        "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
@@ -511,7 +511,7 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": true,
+        "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
@@ -539,8 +539,8 @@
           "measurement": "sleep_metrics",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT sum(\"duration\")/60 FROM \"sleep_metrics\" WHERE \"type\" = 'HKCategoryTypeIdentifierSleepAnalysis' AND time >= now() - 1d",
-          "rawQuery": false,
+          "query": "SELECT sum(\"duration\")/3600 as \"Sleep Hours\" \nFROM \"sleep_metrics\" \nWHERE time >= now() - 1d",
+          "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -614,7 +614,7 @@
           "fields": "",
           "values": false
         },
-        "showPercentChange": true,
+        "showPercentChange": false,
         "textMode": "auto",
         "wideLayout": true
       },
@@ -835,13 +835,73 @@
             "type": "influxdb",
             "uid": "health"
           },
-          "query": "\n                SELECT \n                    ((COALESCE(hrv_score, 50) * 0.4) + (COALESCE(rhr_score, 50) * 0.3) + (COALESCE(sleep_score, 50) * 0.3)) as \"Readiness Score\"\n                FROM (\n                    SELECT \n                        last(\"hrv_sdnn\") * 1.2 as hrv_score,\n                        (100 - last(\"resting_heart_rate\")) as rhr_score,\n                        last(\"duration\")/60 * 12.5 as sleep_score\n                    FROM \"heart_metrics\", \"sleep_metrics\" \n                    WHERE time >= now() - 7d\n                )\n                ",
+          "query": "  SELECT mean(\"hrv_sdnn\") * 1.2 * 0.4 as \"HRV Component\"\n  FROM \"heart_metrics\"\n  WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN' AND time >= now() - 7d",
           "rawQuery": true,
           "refId": "A",
+          "resultFormat": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "dejks1p408ow0e"
+          },
+          "hide": false,
+          "query": "  SELECT (100 - mean(\"resting_heart_rate\")) * 0.3 as \"RHR Component\"\n  FROM \"heart_metrics\"\n  WHERE \"type\" = 'HKQuantityTypeIdentifierRestingHeartRate' AND time >= now() - 7d",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
+        },
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "dejks1p408ow0e"
+          },
+          "hide": false,
+          "query": "SELECT sum(\"duration\")/3600 * 12.5 * 0.3 as \"Sleep Component\"\nFROM \"sleep_metrics\"\nWHERE \"type\" = 'HKCategoryTypeIdentifierSleepAnalysis' AND time >= now() - 7d",
+          "rawQuery": true,
+          "refId": "C",
           "resultFormat": "time_series"
         }
       ],
       "title": "Readiness Score",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "alias": "Readiness score",
+            "binary": {
+              "left": {
+                "matcher": {
+                  "id": "byType",
+                  "options": "number"
+                }
+              },
+              "right": {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Time"
+                }
+              }
+            },
+            "cumulative": {
+              "field": "heart_metrics.RHR Component",
+              "reducer": "sum"
+            },
+            "mode": "reduceRow",
+            "reduce": {
+              "include": [],
+              "reducer": "sum"
+            },
+            "replaceFields": true,
+            "window": {
+              "reducer": "mean",
+              "windowAlignment": "trailing",
+              "windowSize": 0.1,
+              "windowSizeMode": "percentage"
+            }
+          }
+        }
+      ],
       "type": "gauge"
     },
     {
@@ -1151,51 +1211,9 @@
           "measurement": "apple_health_vitals",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": " SELECT  mean(\"duration\" * \"value\" / 1000) as \"Acute Load (7d)\" FROM \"workout_sessions\" WHERE $timeFilter GROUP BY time(1d)",
-          "rawQuery": false,
+          "query": "SELECT mean(\"duration\")*mean(\"total_energy_burned\")/1000 as \"Acute Load (7d)\" FROM \"workout_sessions\" WHERE $timeFilter\nGROUP BY time(1d) fill(0)",
+          "rawQuery": true,
           "refId": "A",
-          "resultFormat": "time_series",
-          "select": [
-            [
-              {
-                "params": [
-                  "value"
-                ],
-                "type": "field"
-              },
-              {
-                "params": [],
-                "type": "mean"
-              }
-            ]
-          ],
-          "tags": []
-        },
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "health"
-          },
-          "groupBy": [
-            {
-              "params": [
-                "$__interval"
-              ],
-              "type": "time"
-            },
-            {
-              "params": [
-                "null"
-              ],
-              "type": "fill"
-            }
-          ],
-          "measurement": "apple_health_workout",
-          "orderByTime": "ASC",
-          "policy": "default",
-          "query": "SELECT mean(\"value\") FROM \"measurement\" WHERE $timeFilter GROUP BY time($__interval) fill(null)",
-          "rawQuery": false,
-          "refId": "B",
           "resultFormat": "time_series",
           "select": [
             [
@@ -1460,8 +1478,8 @@
           "measurement": "sleep_metrics",
           "orderByTime": "ASC",
           "policy": "default",
-          "query": "SELECT sum(\"duration\")/60 as \"Total Sleep\" FROM \"sleep_metrics\" WHERE \"type\" = 'HKCategoryTypeIdentifierSleepAnalysis' AND \"sleep_state\" = 'HKCategoryValueSleepAnalysisAsleep' AND $timeFilter GROUP BY time(1d) fill(0)\n                ",
-          "rawQuery": false,
+          "query": "SELECT sum(\"duration\")/60 as \"Total Sleep\" \nFROM \"sleep_metrics\" \nWHERE $timeFilter GROUP BY time(1d) fill(0)",
+          "rawQuery": true,
           "refId": "A",
           "resultFormat": "time_series",
           "select": [
@@ -1518,6 +1536,7 @@
             "lineWidth": 0,
             "spanNulls": false
           },
+          "fieldMinMax": false,
           "mappings": [
             {
               "options": {
@@ -1576,9 +1595,10 @@
             "type": "influxdb",
             "uid": "health"
           },
-          "query": "SELECT mean(\"value\") as \"Sleep State\" FROM \"sleep_metrics\" WHERE \"type\" = 'HKCategoryTypeIdentifierSleepAnalysis' AND $timeFilter GROUP BY time(10m), \"sleep_state\" fill(null)",
+          "query": "SELECT mean(\"value\") as \"Sleep State\" \nFROM \"sleep_metrics\" \nWHERE $timeFilter GROUP BY time(30m) fill(null)",
           "rawQuery": true,
-          "refId": "A"
+          "refId": "A",
+          "resultFormat": "time_series"
         }
       ],
       "title": "Sleep Timeline",
@@ -2157,12 +2177,12 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "dejks1p408ow0e"
       },
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "continuous-RdYlBu"
+            "mode": "fixed"
           },
           "custom": {
             "axisBorderShow": false,
@@ -2172,8 +2192,8 @@
             "axisPlacement": "auto",
             "barAlignment": 0,
             "barWidthFactor": 0.6,
-            "drawStyle": "points",
-            "fillOpacity": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 100,
             "gradientMode": "none",
             "hideFrom": {
               "legend": false,
@@ -2183,18 +2203,18 @@
             "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
-            "pointSize": 6,
+            "pointSize": 5,
             "scaleDistribution": {
               "type": "linear"
             },
-            "showPoints": "always",
+            "showPoints": "auto",
             "spanNulls": false,
             "stacking": {
               "group": "A",
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "area"
             }
           },
           "mappings": [],
@@ -2205,12 +2225,15 @@
                 "color": "green"
               },
               {
+                "color": "#EAB839",
+                "value": 30
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 70
               }
             ]
-          },
-          "unit": "short"
+          }
         },
         "overrides": []
       },
@@ -2220,7 +2243,7 @@
         "x": 0,
         "y": 73
       },
-      "id": 37,
+      "id": 45,
       "options": {
         "legend": {
           "calcs": [],
@@ -2239,14 +2262,15 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "dejks1p408ow0e"
           },
-          "query": "\n                SELECT \n                    (\"hrv_sdnn\" / \"heart_rate\" * 100) as \"Stress Index\"\n                FROM \"heart_metrics\" \n                WHERE $timeFilter AND \"hrv_sdnn\" IS NOT NULL AND \"heart_rate\" IS NOT NULL\n                ",
+          "query": "SELECT (100 - (mean(\"hrv_sdnn\") / mean(\"heart_rate\") * 100)) as \"Stress Index\" FROM \"heart_metrics\" WHERE $timeFilter AND (\"type\" = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN' OR \"type\" = 'HKQuantityTypeIdentifierHeartRate') GROUP BY time(1d) fill(null)",
           "rawQuery": true,
-          "refId": "A"
+          "refId": "A",
+          "resultFormat": "time_series"
         }
       ],
-      "title": "Daytime Stress Proxy (HRV/HR Ratio)",
+      "title": "Day Time Stress Proxy",
       "type": "timeseries"
     },
     {
@@ -2442,9 +2466,10 @@
             "type": "influxdb",
             "uid": "health"
           },
-          "query": "\n                SELECT \n                    (COUNT(\"heart_rate\") * 100.0 / 1440) as \"heart_metrics\",\n                    (COUNT(\"steps\") * 100.0 / 1440) as \"movement_metrics\",\n                    (COUNT(\"duration\") * 100.0 / 24) as \"sleep_metrics\"\n                FROM \"heart_metrics\", \"movement_metrics\", \"sleep_metrics\"\n                WHERE $timeFilter \n                GROUP BY time(1h) fill(0)\n                ",
+          "query": "SELECT \n(COUNT(\"heart_rate\") * 100.0 / 1440) as \"heart_metrics\",\n(COUNT(\"steps\") * 100.0 / 1440) as \"movement_metrics\",\n(COUNT(\"duration\") * 100.0 / 24) as \"sleep_metrics\"\nFROM \"heart_metrics\", \"movement_metrics\", \"sleep_metrics\"\nWHERE $timeFilter \nGROUP BY time(1h) fill(0)",
           "rawQuery": true,
-          "refId": "A"
+          "refId": "A",
+          "resultFormat": "time_series"
         }
       ],
       "title": "Data Completeness Heatmap (by hour)",
@@ -2512,9 +2537,10 @@
             "type": "influxdb",
             "uid": "health"
           },
-          "query": "SELECT (now() - max(time)) as \"Data Lag\" FROM \"heart_metrics\"",
+          "query": "SELECT last(time) as \"Last Data Point\" FROM \"heart_metrics\"\n",
           "rawQuery": true,
-          "refId": "A"
+          "refId": "A",
+          "resultFormat": "time_series"
         }
       ],
       "title": "Data Freshness",
@@ -2607,9 +2633,10 @@
             "type": "influxdb",
             "uid": "health"
           },
-          "query": "\n                SELECT \n                    ABS(\"heart_rate\" - mean(\"heart_rate\")) / stddev(\"heart_rate\") as \"HR Z-Score\"\n                FROM \"heart_metrics\" \n                WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRate' AND $timeFilter\n                HAVING ABS(\"heart_rate\" - mean(\"heart_rate\")) / stddev(\"heart_rate\") > 3\n                ",
+          "query": "SELECT time, \"heart_rate\",\nABS(\"heart_rate\" - 70) / 20 as \"HR Z-Score Approx\"\nFROM \"heart_metrics\"\nWHERE \"type\" = 'HKQuantityTypeIdentifierHeartRate'\nAND $timeFilter\nAND (\"heart_rate\" < 30 OR \"heart_rate\" > 200)",
           "rawQuery": true,
-          "refId": "A"
+          "refId": "A",
+          "resultFormat": "time_series"
         }
       ],
       "title": "Outlier Detection (Z-Score > 3)",
@@ -2663,110 +2690,42 @@
       "pluginVersion": "12.0.0",
       "targets": [
         {
+          "alias": "Heart",
           "datasource": {
             "type": "influxdb",
             "uid": "health"
           },
-          "query": "SELECT  'heart_metrics' as \"Measurement\", COUNT(*) as \"Records\", min(time) as \"First Record\",  max(time) as \"Last Record\" FROM \"heart_metrics\" UNION ALL SELECT 'movement_metrics' as \"Measurement\", COUNT(*) as \"Records\", min(time) as \"First Record\", max(time) as \"Last Record\" FROM \"movement_metrics\"",
+          "query": "  SELECT\n      COUNT(*) as \"Records\",\n      min(time) as \"First Record\",\n      max(time) as \"Last Record\"\n  FROM \"heart_metrics\"",
           "rawQuery": true,
           "refId": "A",
           "resultFormat": "table"
+        },
+        {
+          "alias": "Movement",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "dejks1p408ow0e"
+          },
+          "hide": false,
+          "query": "  SELECT\n      COUNT(*) as \"Records\",\n      min(time) as \"First Record\",\n      max(time) as \"Last Record\"\n  FROM \"movement_metrics\"",
+          "rawQuery": true,
+          "refId": "B",
+          "resultFormat": "time_series"
+        },
+        {
+          "alias": "Sleep",
+          "datasource": {
+            "type": "influxdb",
+            "uid": "dejks1p408ow0e"
+          },
+          "hide": false,
+          "query": "  SELECT\n      COUNT(*) as \"Records\",\n      min(time) as \"First Record\",\n      max(time) as \"Last Record\"\n  FROM \"sleep_metrics\"",
+          "rawQuery": true,
+          "refId": "C",
+          "resultFormat": "time_series"
         }
       ],
       "title": "Data Source Statistics",
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "influxdb",
-        "uid": "health"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "center",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "filterable": true,
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Duration"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "s"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Distance"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "m"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 12,
-        "w": 24,
-        "x": 0,
-        "y": 96
-      },
-      "id": 19,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "time"
-          }
-        ]
-      },
-      "pluginVersion": "12.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "influxdb",
-            "uid": "health"
-          },
-          "query": "\n                SELECT \n                    \"activity_type\" as \"Type\",\n                    \"duration\" as \"Duration\", \n                    \"distance\" as \"Distance\",\n                    \"value\" as \"Energy\",\n                    time as \"Date\"\n                FROM \"workout_sessions\" \n                WHERE $timeFilter \n                ORDER BY time DESC\n                LIMIT 50\n                ",
-          "rawQuery": true,
-          "refId": "A",
-          "resultFormat": "table"
-        }
-      ],
-      "title": "Recent Workouts (Last 30 Days)",
       "type": "table"
     }
   ],
@@ -2783,12 +2742,12 @@
     "list": []
   },
   "time": {
-    "from": "now-6M",
+    "from": "now-30d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Apple Health Ultimate Dashboard",
   "uid": "apple_health_ultimate",
-  "version": 13
+  "version": 31
 }
