@@ -142,13 +142,21 @@ class HealthDataParser:
         record_type = record.get('type', '')
         
         # Validate required attributes
-        if not all([record.get('value'), record.get('startDate')]):
-            logging.warning(f"{record_type} record missing required attributes")
+        value_str = record.get('value', '')
+        start_date_str = record.get('startDate', '')
+        
+        if not value_str or not start_date_str:
+            logging.warning(f"{record_type} record missing required attributes: value={bool(value_str)}, startDate={bool(start_date_str)}")
             return None
             
         try:
-            value = float(record.get('value', 0))
-            start_date = self.parse_datetime(record.get('startDate'))
+            value = float(value_str)
+            # Basic sanity check for all numeric values
+            if not (-1e10 <= value <= 1e10):  # Reasonable range check
+                logging.warning(f"{record_type} has extreme value: {value}")
+                return None
+                
+            start_date = self.parse_datetime(start_date_str)
             
             # Create base data structure
             data = {
@@ -188,14 +196,30 @@ class HealthDataParser:
         record_type = record.get('type', '')
         
         # Validate required attributes
-        if not all([record.get('startDate'), record.get('endDate')]):
-            logging.warning(f"{record_type} record missing required date attributes")
+        start_date_str = record.get('startDate', '')
+        end_date_str = record.get('endDate', '')
+        
+        if not start_date_str or not end_date_str:
+            logging.warning(f"{record_type} record missing required date attributes: startDate={bool(start_date_str)}, endDate={bool(end_date_str)}")
             return None
             
         try:
-            start_date = self.parse_datetime(record.get('startDate'))
-            end_date = self.parse_datetime(record.get('endDate'))
+            start_date = self.parse_datetime(start_date_str)
+            end_date = self.parse_datetime(end_date_str)
+            
+            # Validate date logic
+            if end_date <= start_date:
+                logging.warning(f"{record_type} has invalid date range: {start_date_str} to {end_date_str}")
+                return None
             duration_seconds = (end_date - start_date).total_seconds()  # Keep in seconds for consistency
+            
+            # Validate duration is reasonable (not negative, not too long)
+            if duration_seconds < 0:
+                logging.warning(f"{record_type} has negative duration: {duration_seconds}s")
+                return None
+            if duration_seconds > 86400 * 7:  # More than 7 days seems unreasonable
+                logging.warning(f"{record_type} has excessive duration: {duration_seconds/3600:.1f}h")
+                return None
             
             # Get category value
             category_value = record.get('value', 'Unknown')
