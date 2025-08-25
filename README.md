@@ -18,10 +18,12 @@ Professional Apple Health data importer with comprehensive Grafana dashboards fo
 
 ### Performance & Reliability
 - **Memory Efficient**: Processes 1GB+ files using only 200-500MB RAM
-- **Fault Tolerant**: Resume interrupted imports from checkpoints
+- **Fault Tolerant**: Resume interrupted imports from checkpoints  
 - **Batch Processing**: Configurable batch sizes with retry logic
 - **Progress Tracking**: Real-time progress bars with ETA
 - **Duplicate Prevention**: Intelligent timestamp-based duplicate detection
+- **Robust Parsing**: Enhanced datetime parsing with multiple format support
+- **Smart Validation**: Relaxed heart rate limits for sleep data accuracy
 
 ### Enterprise Features
 - **Import History**: Track all imports with detailed statistics
