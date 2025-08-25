@@ -94,7 +94,9 @@ health_data/
 *.temp 
 
 # Claude Flow generated files
-.claude/settings.local.json
+.claude/
+.roo/
+.claude-flow/
 .mcp.json
 claude-flow.config.json
 .swarm/
@@ -117,3 +119,30 @@ claude-flow
 claude-flow.bat
 claude-flow.ps1
 hive-mind-prompt-*.txt
+
+# Development and temporary files
+*debug*.py
+*test_*.py
+*fix_*.py
+*create_*.py
+*verify_*.py
+*customize_*.py
+*update_*.py
+grafana_dashboard_*.json
+!Apple\ Health\ Ultimate\ Dashboard.json
+
+# Temporary documentation files  
+*_GUIDE.md
+*_SUMMARY.md
+*_ISSUES*.md
+*_IMPORT*.md
+*_VERSIONS*.md
+READY_TO_IMPORT.md
+FINAL_*.md
+DASHBOARD_*.md
+GRAFANA_*.md
+COLOR_SCHEMES_GUIDE.md
+CUSTOMIZATION_SUMMARY.md
+ULTIMATE_DASHBOARD_GUIDE.md
+coordination.md
+memory-bank.md
