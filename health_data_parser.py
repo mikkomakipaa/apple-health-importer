@@ -38,7 +38,7 @@ class HealthDataParser:
             
         try:
             value = float(record.get('value'))
-            if value <= 0 or value > 400:  # More lenient validation for sleep HR
+            if value <= 0 or value > 300:  # Stricter validation - max realistic HR is ~300 bpm
                 logging.warning(f"Invalid heart rate value: {value}")
                 return None
                 
