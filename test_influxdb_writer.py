@@ -156,9 +156,12 @@ class TestInfluxDBWriter(unittest.TestCase):
     def test_measurement_config_dataclass(self):
         """Test MeasurementConfig dataclass."""
         config = MeasurementConfig(
+            description='Test measurement',
             types=['type1', 'type2'],
             measurement_name='test_measurement',
-            fields={'field1': 'mapped1'}
+            fields={'field1': 'mapped1'},
+            tags=['tag1', 'tag2'],
+            validation={'min_value': 0, 'max_value': 100}
         )
         
         self.assertEqual(config.types, ['type1', 'type2'])
