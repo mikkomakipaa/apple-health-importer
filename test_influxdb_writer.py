@@ -99,7 +99,7 @@ class TestInfluxDBWriter(unittest.TestCase):
         result = self.writer.prepare_point(data_point)
         
         self.assertEqual(result['measurement'], 'heartrate_bpm')
-        self.assertEqual(result['fields']['value'], 72.0)
+        self.assertEqual(result['fields']['heart_rate'], 72.0)
         self.assertEqual(result['tags']['motion_context'], '1')
         self.assertEqual(result['tags']['device'], 'Apple Watch')
     
