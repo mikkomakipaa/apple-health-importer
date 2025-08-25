@@ -111,7 +111,7 @@ def main():
         print("✅ Connected to InfluxDB successfully!")
         
         # Test queries
-        test_queries(client)
+        test_queries()
         
         print(f"\n🎉 Query testing completed!")
         print(f"✅ Fixed dashboard should now work correctly")
