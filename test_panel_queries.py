@@ -17,8 +17,24 @@ def load_config():
         print(f"Error loading config: {e}")
         return None
 
-def test_queries(client):
+def test_queries():
     """Test the key panel queries."""
+    config = load_config()
+    if not config:
+        return
+    
+    # Skip test if no config available (for CI/testing environments)
+    try:
+        client = InfluxDBClient(
+            host=config['url'].split('://')[-1].split(':')[0],
+            port=int(config['url'].split(':')[-1]),
+            username=config.get('username', ''),
+            password=config.get('password', ''),
+            database=config.get('database', 'health')
+        )
+    except Exception as e:
+        print(f"Skipping integration test - no InfluxDB connection: {e}")
+        return
     
     test_queries = [
         {
