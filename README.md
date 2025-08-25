@@ -10,10 +10,11 @@ Professional Apple Health data importer with comprehensive Grafana dashboards fo
 ### Core Capabilities
 - **📊 Multi-Platform Integration**: InfluxDB storage + Home Assistant sensors + Grafana visualization
 - **🏥 Comprehensive Health Data**: Heart rate, workouts, activity summaries, sleep analysis, calories
-- **⚡ High Performance**: Streaming processing for files up to multi-GB size
+- **⚡ High Performance**: Streaming processing for files up to multi-GB size (14k+ elements/sec)
 - **🔄 Smart Import Management**: Incremental imports, duplicate detection, resume capability
-- **🛡️ Data Quality**: Advanced validation pipeline with configurable rules
+- **🛡️ Enhanced Data Quality**: Improved validation pipeline with robust error handling
 - **🔧 Highly Configurable**: External YAML configuration for all settings
+- **🩺 Advanced Analytics**: Readiness scoring, training load analysis, stress monitoring
 
 ### Performance & Reliability
 - **Memory Efficient**: Processes 1GB+ files using only 200-500MB RAM
