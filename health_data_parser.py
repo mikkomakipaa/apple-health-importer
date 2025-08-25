@@ -255,7 +255,7 @@ class HealthDataParser:
             return None
     
     def parse_calories(self, record: ET.Element) -> Optional[Dict[str, Union[str, Dict]]]:
-        """Parse calorie-related records - legacy method for backward compatibility."""
+        """Parse calorie-related records with validation."""
         calorie_types = [
             'HKQuantityTypeIdentifierBasalEnergyBurned',
             'HKQuantityTypeIdentifierActiveEnergyBurned'
@@ -264,7 +264,22 @@ class HealthDataParser:
         if record.get('type') not in calorie_types:
             return None
             
-        return self.parse_generic_quantity(record)
+        # Validate required attributes
+        if not all([record.get('value'), record.get('startDate')]):
+            logging.warning("Calorie record missing required attributes")
+            return None
+            
+        try:
+            value = float(record.get('value'))
+            # Validate reasonable calorie range (0-10000 kcal per measurement)
+            if value <= 0 or value > 10000:
+                logging.warning(f"Invalid calorie value: {value}")
+                return None
+                
+            return self.parse_generic_quantity(record)
+        except (ValueError, TypeError) as e:
+            logging.error(f"Error parsing calorie record: {e}")
+            return None
             
     def parse_sleep(self, record: ET.Element) -> Optional[Dict[str, Union[str, Dict]]]:
         """Parse sleep analysis record - legacy method for backward compatibility."""
