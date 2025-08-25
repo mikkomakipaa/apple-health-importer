@@ -295,6 +295,18 @@ python import_health_data.py export.xml --force
 - Test connection: `curl http://your-influxdb:8086/ping`
 - Review logs in `import.log`
 
+**Dashboard Query Issues**
+```sql
+-- Fixed Data Freshness query (InfluxDB compatible)
+SELECT last(time) as "Last Data Point" FROM "heart_metrics"
+
+-- Fixed Data Source Statistics (use multiple queries instead of UNION)
+SELECT COUNT(*) as "Records", min(time) as "First", max(time) as "Last" FROM "heart_metrics"
+
+-- Fixed Readiness Score (avoid COALESCE, use transforms)
+SELECT mean("hrv_sdnn") * 1.2 * 0.4 as "HRV Component" FROM "heart_metrics" WHERE "type" = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN'
+```
+
 ### Performance Tuning
 
 **For Very Large Files (>2GB)**
