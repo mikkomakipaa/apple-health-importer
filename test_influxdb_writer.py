@@ -2,7 +2,8 @@
 
 import unittest
 from unittest.mock import Mock, patch
-from influxdb_writer import InfluxDBWriter, MeasurementConfig
+from influxdb_writer import InfluxDBWriter
+from config_manager import MeasurementConfig
 
 
 class TestInfluxDBWriter(unittest.TestCase):
