@@ -242,7 +242,7 @@ class HealthDataParser:
             # Add type-specific tags
             if 'Sleep' in record_type:
                 data['tags']['sleep_state'] = category_value
-                data['fields']['quality'] = 1.0 if 'Asleep' in category_value else 0.0
+                data['fields']['quality'] = 1 if 'Asleep' in category_value else 0
             elif 'Audio' in record_type:
                 data['tags']['exposure_event'] = category_value
             elif 'Stand' in record_type:
