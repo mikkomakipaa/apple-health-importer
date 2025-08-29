@@ -398,7 +398,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Getting Help
 - **Issues**: [GitHub Issues](https://github.com/mikkomakipaa/apple-health-importer/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/mikkomakipaa/apple-health-importer/discussions)
-- **Documentation**: Check CLAUDE.md for development guidance
+- **Security Guide**: [docs/security_improvements.md](docs/security_improvements.md)
+- **Deployment Guide**: [docs/deployment_guide.md](docs/deployment_guide.md)
+- **Sleep Data Issues**: [docs/sleep_data_analysis.md](docs/sleep_data_analysis.md)
+- **Performance Report**: [docs/final_swarm_report.md](docs/final_swarm_report.md)
 
 ### Reporting Bugs
 When reporting issues, please include:
