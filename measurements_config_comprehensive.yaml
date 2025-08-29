@@ -376,7 +376,7 @@ measurements:
           min: 1
           max: 50000
           typical_min: 30
-          typical_max: 720
+          typical_max: 1440
         temperature:
           min: 30
           max: 45
