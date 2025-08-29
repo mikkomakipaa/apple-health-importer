@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import logging
-from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Optional, Union
+from datetime import datetime
+from typing import Dict, List, Optional, Union
 from dataclasses import dataclass
 
 
