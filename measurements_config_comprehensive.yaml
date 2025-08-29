@@ -374,7 +374,7 @@ measurements:
       rules:
         duration:
           min: 30
-          max: 1440
+          max: 50000
           typical_min: 240
           typical_max: 720
         temperature:
