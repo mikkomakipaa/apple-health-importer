@@ -29,9 +29,9 @@ measurements:
       enabled: true
       rules:
         value:
-          min: 30
+          min: 20
           max: 250
-          typical_min: 40
+          typical_min: 25
           typical_max: 200
 
   # ============================================================================
