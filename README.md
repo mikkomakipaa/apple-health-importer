@@ -48,24 +48,33 @@ Professional Apple Health data importer with comprehensive Grafana dashboards fo
 
 ## 🛠️ Installation
 
-### 1. Clone Repository
+### Option 1: Automated Secure Setup ✨ **RECOMMENDED**
 ```bash
 git clone https://github.com/mikkomakipaa/apple-health-importer.git
 cd apple-health-importer
+
+# Set your credentials as environment variables
+export INFLUXDB_URL="https://your-influxdb:8086"
+export INFLUXDB_TOKEN="your-secure-token"
+export HOMEASSISTANT_URL="https://your-ha:8123"
+export HOMEASSISTANT_TOKEN="your-ha-token"
+
+# Run automated deployment
+chmod +x scripts/secure_deploy.sh
+./scripts/secure_deploy.sh
 ```
 
-### 2. Install Dependencies
+### Option 2: Manual Installation
 ```bash
+git clone https://github.com/mikkomakipaa/apple-health-importer.git
+cd apple-health-importer
+
+# Install dependencies
 pip install -r requirements.txt
-```
 
-### 3. Configure Settings
-```bash
-# Copy example configuration
+# Configure settings
 cp config.yaml.example config.yaml
-
-# Edit with your settings
-nano config.yaml
+nano config.yaml  # Edit with your settings
 ```
 
 **Required configuration:**
