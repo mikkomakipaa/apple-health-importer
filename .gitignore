@@ -131,6 +131,10 @@ hive-mind-prompt-*.txt
 grafana_dashboard_*.json
 !Apple\ Health\ Ultimate\ Dashboard.json
 
+# Process ID files
+*.pid
+import_pid.txt
+
 # Temporary documentation files  
 *_GUIDE.md
 *_SUMMARY.md
@@ -146,3 +150,6 @@ CUSTOMIZATION_SUMMARY.md
 ULTIMATE_DASHBOARD_GUIDE.md
 coordination.md
 memory-bank.md
+
+# Project workspace files
+*.code-workspace
