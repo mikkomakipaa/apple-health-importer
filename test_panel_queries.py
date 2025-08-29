@@ -22,7 +22,7 @@ def test_queries():
     config = load_config()
     if not config:
         return
-    
+
     # Skip test if no config available (for CI/testing environments)
     try:
         client = InfluxDBClient(
@@ -35,14 +35,14 @@ def test_queries():
     except Exception as e:
         print(f"Skipping integration test - no InfluxDB connection: {e}")
         return
-    
+
     test_queries = [
         {
             'name': 'Heart Rate Recovery',
             'query': 'SELECT "value" AS "1-Min Recovery (BPM)" FROM "heart_metrics" WHERE "type" = \'HKQuantityTypeIdentifierHeartRateRecoveryOneMinute\' LIMIT 5'
         },
         {
-            'name': 'Sleep Timeline', 
+            'name': 'Sleep Timeline',
             'query': 'SELECT mean("value") AS "Sleep State" FROM "sleep_metrics" WHERE "type" = \'HKCategoryTypeIdentifierSleepAnalysis\' GROUP BY time(10m), "sleep_state" LIMIT 10'
         },
         {
@@ -62,17 +62,17 @@ def test_queries():
             'query': 'SELECT sum("steps") AS "Steps" FROM "movement_metrics" WHERE "type" = \'HKQuantityTypeIdentifierStepCount\' LIMIT 5'
         }
     ]
-    
+
     print("🧪 Testing panel queries...")
-    
+
     for test in test_queries:
         print(f"\n📊 Testing {test['name']}:")
         print(f"   Query: {test['query']}")
-        
+
         try:
             result = client.query(test['query'])
             points = list(result.get_points())
-            
+
             if points:
                 print(f"   ✅ SUCCESS: Found {len(points)} records")
                 # Show first result
@@ -80,24 +80,24 @@ def test_queries():
                 print(f"   📋 Sample: {first_point}")
             else:
                 print(f"   ⚠️  WARNING: Query succeeded but no data returned")
-                
+
         except Exception as e:
             print(f"   ❌ ERROR: {e}")
 
 def main():
     logging.basicConfig(level=logging.WARNING)  # Reduce log noise
-    
+
     # Load config
     influx_config = load_config()
     if not influx_config:
         print("❌ Could not load InfluxDB configuration")
         return
-    
+
     try:
         # Connect to InfluxDB
         from urllib.parse import urlparse
         parsed = urlparse(influx_config['url'])
-        
+
         client = InfluxDBClient(
             host=parsed.hostname,
             port=parsed.port or 8086,
@@ -105,18 +105,18 @@ def main():
             password=influx_config['password'],
             database=influx_config['database']
         )
-        
+
         # Test connection
         client.ping()
         print("✅ Connected to InfluxDB successfully!")
-        
+
         # Test queries
         test_queries()
-        
+
         print(f"\n🎉 Query testing completed!")
         print(f"✅ Fixed dashboard should now work correctly")
         print(f"📁 Use: grafana_dashboard_fixed.json")
-        
+
     except Exception as e:
         print(f"❌ Connection failed: {e}")
 
