@@ -373,7 +373,7 @@ measurements:
       enabled: true
       rules:
         duration:
-          min: 30
+          min: 1
           max: 50000
           typical_min: 30
           typical_max: 720
