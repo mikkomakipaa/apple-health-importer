@@ -28,11 +28,31 @@ measurements:
     validation:
       enabled: true
       rules:
-        value:
-          min: 20
+        heart_rate:
+          min: 30
           max: 250
-          typical_min: 25
+          typical_min: 50
           typical_max: 200
+        resting_hr:
+          min: 30
+          max: 120
+          typical_min: 40
+          typical_max: 100
+        recovery_hr:
+          min: 5    # Heart rate recovery can be very low for fit individuals
+          max: 80
+          typical_min: 10
+          typical_max: 60
+        hrv:
+          min: 5    # HRV can be quite low, especially during stress/illness
+          max: 300
+          typical_min: 15
+          typical_max: 100
+        walking_avg_hr:
+          min: 50
+          max: 200
+          typical_min: 70
+          typical_max: 150
 
   # ============================================================================
   # RESPIRATORY & BLOOD METRICS
