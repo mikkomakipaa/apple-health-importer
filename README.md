@@ -4,6 +4,8 @@ Professional Apple Health data importer with comprehensive Grafana dashboards fo
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Security](https://img.shields.io/badge/Security-Enhanced-green.svg)](docs/security_improvements.md)
+[![Performance](https://img.shields.io/badge/Performance-14k%2B%20records%2Fsec-brightgreen.svg)](docs/final_swarm_report.md)
 
 ## 🚀 Features
 
