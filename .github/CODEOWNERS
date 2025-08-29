@@ -1,0 +1,18 @@
+# Global owners
+* @mikkomakipaa
+
+# Security-related files
+SECURITY.md @mikkomakipaa
+.github/workflows/ @mikkomakipaa
+scripts/secure_deploy.sh @mikkomakipaa
+
+# Core application
+src/apple_health_importer/ @mikkomakipaa
+
+# Configuration
+config/ @mikkomakipaa
+*.yaml @mikkomakipaa
+
+# Documentation
+docs/ @mikkomakipaa
+README.md @mikkomakipaa
