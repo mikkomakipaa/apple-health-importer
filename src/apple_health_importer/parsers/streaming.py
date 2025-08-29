@@ -8,11 +8,11 @@ import json
 from pathlib import Path
 from tqdm import tqdm
 
-from health_data_parser import HealthDataParser
-from data_validator import HealthDataValidator
-from influxdb_writer import InfluxDBWriter
-from import_tracker import ImportTracker
-from config_manager import ConfigManager
+from .health_data import HealthDataParser
+from ..validation.validator import HealthDataValidator
+from ..writers.influxdb import InfluxDBWriter
+from ..tracking.tracker import ImportTracker
+from ..config.manager import ConfigManager
 
 
 class ProgressCheckpoint:
