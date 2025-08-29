@@ -3,16 +3,8 @@
 __version__ = "1.0.0"
 __author__ = "Mikko Mäkipää"
 
-from .main import main
-from .parsers.health_data import HealthDataParser
-from .writers.influxdb import InfluxDBWriter
-from .validation.validator import HealthDataValidator
-from .config.manager import ConfigManager
+# Import only what we need to avoid circular dependencies
+__version__ = "1.0.0"
+__author__ = "Mikko Mäkipää"
 
-__all__ = [
-    "main",
-    "HealthDataParser", 
-    "InfluxDBWriter",
-    "HealthDataValidator",
-    "ConfigManager",
-]
+__all__ = []
