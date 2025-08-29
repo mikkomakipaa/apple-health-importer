@@ -230,7 +230,7 @@ class HealthDataParser:
                 'time': start_date.isoformat(),
                 'fields': {
                     'duration': duration_seconds,  # Store in seconds consistently
-                    'value': 1.0  # Category presence indicator - use float for consistency
+                    'value': 1  # Category presence indicator - keep as integer for InfluxDB compatibility
                 },
                 'tags': {
                     'source': record.get('sourceName', ''),
