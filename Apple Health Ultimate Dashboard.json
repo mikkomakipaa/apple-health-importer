@@ -37,7 +37,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -94,7 +94,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT last(\"steps\") FROM \"movement_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierStepCount' AND time >= now() - 1d",
           "rawQuery": true,
@@ -108,7 +108,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -165,7 +165,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT last(\"active_energy\") FROM \"energy_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierActiveEnergyBurned' AND time >= now() - 1d",
           "rawQuery": true,
@@ -179,7 +179,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -236,7 +236,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT last(\"stand_time\") FROM \"energy_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierAppleStandTime' AND time >= now() - 1d",
           "rawQuery": true,
@@ -250,7 +250,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -307,7 +307,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT last(\"exercise_time\") FROM \"energy_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierAppleExerciseTime' AND time >= now() - 1d",
           "rawQuery": true,
@@ -321,7 +321,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -378,7 +378,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT last(\"resting_heart_rate\") FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierRestingHeartRate' AND time >= now() - 7d",
           "rawQuery": true,
@@ -392,7 +392,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -449,7 +449,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT last(\"hrv_sdnn\") FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN' AND time >= now() - 7d",
           "rawQuery": true,
@@ -463,7 +463,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -520,7 +520,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "groupBy": [
             {
@@ -566,7 +566,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -623,7 +623,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT mean(\"oxygen_saturation\") FROM \"respiratory_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierOxygenSaturation' AND time >= now() - 1d",
           "rawQuery": true,
@@ -650,7 +650,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -748,7 +748,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT mean(\"heart_rate\") AS \"Heart Rate\" FROM \"heart_metrics\" WHERE $timeFilter AND \"type\" = 'HKQuantityTypeIdentifierHeartRate' GROUP BY time($__interval) fill(null)",
           "rawQuery": true,
@@ -775,7 +775,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -833,7 +833,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "  SELECT mean(\"hrv_sdnn\") * 1.2 * 0.4 as \"HRV Component\"\n  FROM \"heart_metrics\"\n  WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN' AND time >= now() - 7d",
           "rawQuery": true,
@@ -907,7 +907,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -994,7 +994,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "\n                SELECT \n                    (acute_load / chronic_load) as \"ACWR\"\n                FROM (\n                    SELECT \n                        mean(\"duration\") * mean(\"value\") as acute_load\n                    FROM \"workout_sessions\" \n                    WHERE time >= now() - 7d\n                ),\n                (\n                    SELECT \n                        mean(\"duration\") * mean(\"value\") as chronic_load\n                    FROM \"workout_sessions\" \n                    WHERE time >= now() - 28d\n                )\n                ",
           "rawQuery": true,
@@ -1007,7 +1007,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -1082,7 +1082,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT sum(\"exercise_time\") as \"Exercise Minutes\" FROM \"energy_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierAppleExerciseTime' AND $timeFilter GROUP BY time(1d) fill(0)",
           "rawQuery": true,
@@ -1108,7 +1108,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -1192,7 +1192,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "groupBy": [
             {
@@ -1238,7 +1238,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -1320,7 +1320,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "groupBy": [
             {
@@ -1380,7 +1380,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -1459,7 +1459,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "groupBy": [
             {
@@ -1517,7 +1517,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -1593,7 +1593,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT mean(\"value\") as \"Sleep State\" \nFROM \"sleep_metrics\" \nWHERE $timeFilter GROUP BY time(30m) fill(null)",
           "rawQuery": true,
@@ -1607,7 +1607,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -1724,7 +1724,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT mean(\"hrv_sdnn\") as \"HRV SDNN\" FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN' AND $timeFilter GROUP BY time($__interval) fill(null)",
           "rawQuery": true,
@@ -1733,7 +1733,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT mean(\"resting_heart_rate\") as \"Resting HR\" FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierRestingHeartRate' AND $timeFilter GROUP BY time($__interval) fill(null)",
           "rawQuery": true,
@@ -1746,7 +1746,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -1831,7 +1831,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT \"value\" as \"1-Min Recovery\" FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRateRecoveryOneMinute' AND $timeFilter",
           "rawQuery": true,
@@ -1857,7 +1857,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -1937,7 +1937,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT mean(\"resting_heart_rate\") as \"Resting HR\" FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierRestingHeartRate' AND $timeFilter GROUP BY time(1d) fill(null)",
           "rawQuery": true,
@@ -1950,7 +1950,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -2035,7 +2035,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT mean(\"oxygen_saturation\") as \"SpO₂ Average\" FROM \"respiratory_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierOxygenSaturation' AND $timeFilter GROUP BY time(1d) fill(null)",
           "rawQuery": true,
@@ -2044,7 +2044,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT min(\"oxygen_saturation\") as \"SpO₂ Minimum\" FROM \"respiratory_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierOxygenSaturation' AND $timeFilter GROUP BY time(1d) fill(null)",
           "rawQuery": true,
@@ -2057,7 +2057,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -2151,7 +2151,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT mean(\"respiratory_rate\") as \"Respiratory Rate\" FROM \"respiratory_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierRespiratoryRate' AND $timeFilter GROUP BY time($__interval) fill(null)",
           "rawQuery": true,
@@ -2276,7 +2276,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -2353,7 +2353,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT last(\"hrv_sdnn\") * 1.2 as \"HRV Score\" FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierHeartRateVariabilitySDNN' AND $timeFilter GROUP BY time(1d)",
           "rawQuery": true,
@@ -2362,7 +2362,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT (100 - last(\"resting_heart_rate\")) as \"RHR Score\" FROM \"heart_metrics\" WHERE \"type\" = 'HKQuantityTypeIdentifierRestingHeartRate' AND $timeFilter GROUP BY time(1d)",
           "rawQuery": true,
@@ -2371,7 +2371,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT (sum(\"duration\")/60 * 12.5) as \"Sleep Score\" FROM \"sleep_metrics\" WHERE \"type\" = 'HKCategoryTypeIdentifierSleepAnalysis' AND $timeFilter GROUP BY time(1d)",
           "rawQuery": true,
@@ -2397,7 +2397,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -2464,7 +2464,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT \n(COUNT(\"heart_rate\") * 100.0 / 1440) as \"heart_metrics\",\n(COUNT(\"steps\") * 100.0 / 1440) as \"movement_metrics\",\n(COUNT(\"duration\") * 100.0 / 24) as \"sleep_metrics\"\nFROM \"heart_metrics\", \"movement_metrics\", \"sleep_metrics\"\nWHERE $timeFilter \nGROUP BY time(1h) fill(0)",
           "rawQuery": true,
@@ -2478,7 +2478,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -2535,7 +2535,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT last(time) as \"Last Data Point\" FROM \"heart_metrics\"\n",
           "rawQuery": true,
@@ -2549,7 +2549,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -2631,7 +2631,7 @@
         {
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "SELECT time, \"heart_rate\",\nABS(\"heart_rate\" - 70) / 20 as \"HR Z-Score Approx\"\nFROM \"heart_metrics\"\nWHERE \"type\" = 'HKQuantityTypeIdentifierHeartRate'\nAND $timeFilter\nAND (\"heart_rate\" < 30 OR \"heart_rate\" > 200)",
           "rawQuery": true,
@@ -2645,7 +2645,7 @@
     {
       "datasource": {
         "type": "influxdb",
-        "uid": "health"
+        "uid": "apple_health"
       },
       "fieldConfig": {
         "defaults": {
@@ -2693,7 +2693,7 @@
           "alias": "Heart",
           "datasource": {
             "type": "influxdb",
-            "uid": "health"
+            "uid": "apple_health"
           },
           "query": "  SELECT\n      COUNT(*) as \"Records\",\n      min(time) as \"First Record\",\n      max(time) as \"Last Record\"\n  FROM \"heart_metrics\"",
           "rawQuery": true,
