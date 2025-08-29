@@ -4,7 +4,7 @@ import logging
 from urllib.parse import urlparse
 import time
 from datetime import datetime, timedelta
-from config_manager import ConfigManager
+from ..config.manager import ConfigManager
 
 
 class InfluxDBWriter:
