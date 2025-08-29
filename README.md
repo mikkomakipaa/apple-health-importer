@@ -68,7 +68,7 @@ influxdb:
   url: "http://your-influxdb-host:8086"
   username: "your-username" 
   password: "your-password"
-  database: "health"
+  database: "apple_health"
 
 # Processing settings
 processing:
@@ -153,7 +153,7 @@ influxdb:
   url: "http://localhost:8086"
   username: "admin"
   password: "password"
-  database: "health"
+  database: "apple_health"
 
 # Home Assistant (Optional)
 homeassistant:
