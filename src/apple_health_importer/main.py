@@ -10,13 +10,13 @@ from datetime import datetime
 from tqdm import tqdm
 from pathlib import Path
 
-from health_data_parser import HealthDataParser
-from influxdb_writer import InfluxDBWriter
-from homeassistant import HomeAssistantAPI
-from data_validator import HealthDataValidator
-from import_tracker import ImportTracker
-from config_manager import ConfigManager
-from streaming_processor import StreamingHealthDataProcessor
+from .parsers.health_data import HealthDataParser
+from .writers.influxdb import InfluxDBWriter
+from .writers.homeassistant import HomeAssistantAPI
+from .validation.validator import HealthDataValidator
+from .tracking.tracker import ImportTracker
+from .config.manager import ConfigManager
+from .parsers.streaming import StreamingHealthDataProcessor
 
 def load_config(config_path: str) -> Dict:
     """Load configuration from YAML file."""
