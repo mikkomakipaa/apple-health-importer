@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import unittest
-# from unittest.mock import Mock  # unused import, patch
+from unittest.mock import patch, Mock
 from influxdb_writer import InfluxDBWriter
 from config_manager import MeasurementConfig
 
