@@ -3,7 +3,7 @@ influxdb:
   url: "http://your-influxdb-host:8086"
   token: "your-influxdb-token"
   org: "your-organization"
-  bucket: "health"
+  bucket: "apple_health"
   
 # Home Assistant Configuration
 homeassistant:
