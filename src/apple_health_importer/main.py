@@ -10,13 +10,28 @@ from datetime import datetime
 from tqdm import tqdm
 from pathlib import Path
 
-from .parsers.health_data import HealthDataParser
-from .writers.influxdb import InfluxDBWriter
-from .writers.homeassistant import HomeAssistantAPI
-from .validation.validator import HealthDataValidator
-from .tracking.tracker import ImportTracker
-from .config.manager import ConfigManager
-from .parsers.streaming import StreamingHealthDataProcessor
+# Handle both relative and absolute imports
+try:
+    from .parsers.health_data import HealthDataParser
+    from .writers.influxdb import InfluxDBWriter
+    from .writers.homeassistant import HomeAssistantAPI
+    from .validation.validator import HealthDataValidator
+    from .tracking.tracker import ImportTracker
+    from .config.manager import ConfigManager
+    from .parsers.streaming import StreamingHealthDataProcessor
+except ImportError:
+    # For direct execution
+    import sys
+    from pathlib import Path
+    sys.path.append(str(Path(__file__).parent))
+    
+    from parsers.health_data import HealthDataParser
+    from writers.influxdb import InfluxDBWriter
+    from writers.homeassistant import HomeAssistantAPI
+    from validation.validator import HealthDataValidator
+    from tracking.tracker import ImportTracker
+    from config.manager import ConfigManager
+    from parsers.streaming import StreamingHealthDataProcessor
 
 def load_config(config_path: str) -> Dict:
     """Load configuration from YAML file."""
